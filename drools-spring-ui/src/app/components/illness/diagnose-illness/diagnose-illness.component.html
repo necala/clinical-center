@@ -1,0 +1,256 @@
+<div id="symptoms">
+	<p>Please Enter Symptoms</p>
+	
+	<div class="row">
+		<label for="fieldPatient" class="form-control-label">Patient Nr:</label>
+		    <input type="text"  [(ngModel)]="patient.patientId" placeholder="Patient Nr"
+		               class="form-control" id="fieldPatient" name="fieldPatient1" >
+	</div>
+	<div class="row">
+		<div id="term">
+			<label for="field1c" class="form-control-label">Description</label>
+			<select [(ngModel)]="symptom.term" (change)="termChanged()"
+		                    class="form-control" id="field1c" name="field1">
+		              <option value="RUNNY_NOSE">Runny nose</option>
+		              <option value="SORE_THROAT">Sore throat</option>
+		              <option value="HEADACHE">Headache</option>
+		              <option value="SNEEZE">Sneeze</option>
+		              <option value="COUGH">Cough</option>
+		              <option value="SHIVER">Shiver</option>
+		              <option value="TEMPERATURE">Temperature</option>
+		              <option value="PAIN_TO_EARS">Pain spread to ears</option>
+		              <option value="APPETITE_LOSS">Apetite loss</option>
+		              <option value="TIREDNESS">Tiredness</option>
+		              <option value="YELLOW_SECRETION_FROM_NOSE">Yellow nose secretion</option>
+		              <option value="EYE_SWELLING">Eye swelling</option>
+		              <option value="HIGH_PRESSURE">High pressure</option>
+		              <option value="OFTEN_URINATION">Often urination</option>
+		              <option value="WEIGHT_LOSS">Weight loss</option>
+		              <option value="FATIGUE">Fatigue</option>
+		              <option value="NAUSEA_AND_VOMITTING">Nausea and vomitting</option>
+		              <option value="NOCTURIA">Nocturia</option>
+		              <option value="LEGS_AND_JOINTS_SWELLING">Legs and joints swelling</option>
+		              <option value="CHOKING">Choking</option>
+		              <option value="CHEST_PAIN">Chest pain</option>
+		              <option value="SURGERY_RECOVERY">Surgery recovery</option>
+		              <option value="DIARRHEA">Diarrhea</option>
+			</select>
+		</div>
+		<div id="tempValue" *ngIf="tempChosen">
+			<label for="fieldtemp" class="form-control-label">Height:</label>
+		    <input type="number" step="0.5" min="35" max="45" [(ngModel)]="symptom.temperature" placeholder="Height"
+		               class="form-control" id="fieldtemp" name="fieldtemp1" >
+	       
+		</div>
+		
+	</div>
+	<br/>
+	<button class="btn btn-primary" (click)="newSyptom()">+</button>
+	<br/>
+	
+		<table id="table1" class="table table-hover">
+		    <thead>
+		    <tr>
+		      <td></td>
+		      <td></td>
+		    </tr>
+		    </thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let sym of symptoms">
+		
+		      <td>
+		      	<ng-container *ngIf="sym.term == 'TEMPERATURE'">
+		     		{{sym.term}} : {{sym.temperature}}
+		        </ng-container>
+		        <ng-container *ngIf="sym.term != 'TEMPERATURE'">
+		     		{{sym.term}}
+		        </ng-container>
+		      </td>
+		      <td>
+		      	<button class="btn btn-danger" (click)="remove(sym)">Remove</button>
+		      </td>
+		
+		    </tr>
+	    </tbody>
+	  </table>
+	
+    
+    <br/>
+    <br/>
+	<button class="btn btn-primary" (click)="getAll()">Get all illneses</button>
+	
+	<button class="btn btn-primary" (click)="getOne()">Get one illness</button>
+	
+	<button class="btn btn-primary" (click)="diagnoseAlone()">Set diagnose alone</button>
+	
+	<div [ngStyle]="{'display':display}" class="modal" id="illnessModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+        	<span class="form-control-static pull-left">
+          	<button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button>
+          	</span>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="!diagnostic">
+          	<table id="table1" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td>Category</td>
+		      <td>Symptoms</td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let illness of allIllnesses">
+			
+				<td>
+			   		{{illness.name}}
+			    </td>
+			    <td>
+			    	{{illness.category}}
+			    </td>
+			    <td>
+			    	{{illness.symptoms.length}}
+			    </td>
+			    <td>
+				  	<button class="btn btn-success" (click)="choose(illness)">Choose</button>
+			    </td>
+			
+			    </tr>
+		    </tbody>
+		  </table>
+          </div>
+          <div *ngIf="diagnostic">
+          	<div class="row">
+          		<div id="ill">
+					<label for="fieldIllness" class="form-control-label">Illness:</label>
+			    	<select [(ngModel)]="illness.name"
+			                    class="form-control" id="field1c" name="field1">
+			              <option value="Cold">Cold</option>
+			              <option value="Fever">Fever</option>
+			              <option value="Sinus Infection">Sinus Infection</option>
+			              <option value="Tonsil Inflammation">Tonsil Inflammation</option>
+			              <option value="Diabetes">Diabetes</option>
+			              <option value="Hypertension">Hypertension</option>
+			              <option value="Acute Kidney Injury">Acute Kidney Injury</option>
+			              <option value="Chronic Kidney Disease">Kidney Disease</option>
+				</select>
+			</div>
+			<br/>
+			<div id="button" *ngIf="diagnostic">
+	          	<button id="modalCloseButton" class="btn btn-primary" data-dismiss="modal" (click)="getAllSymptoms()">Get Symptoms</button>
+	        </div>
+		    </div>
+          </div>
+          
+        </div>
+        <div class="modal-footer">
+          <ng-container *ngIf="diagnostic">
+             <button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="setDiagnostic()">Set Diagnostic</button>
+          </ng-container>
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+	
+	<div [ngStyle]="{'display':displaySym}" class="modal" id="symModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalSymptomsClose()">&times;</button></span>
+          <h4>Illness: {{illness.name}}</h4>
+        </div>
+        <div class="modal-body">
+          <div id="divSym">
+          	<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Term</td>
+		      <td>Specific</td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let sym of illnessSymptoms">
+				<ng-container *ngIf="sym.helper != ''">
+					<td>
+				   		{{sym.helper}}
+				    </td>
+				    <td>
+				    	<ng-container *ngIf="sym.specific">
+				    		Yes
+				    	</ng-container>
+				    	<ng-container *ngIf="!sym.specific">
+				    		No
+				    	</ng-container>
+				    </td>
+			    </ng-container>
+			    </tr>
+		    </tbody>
+		  </table>
+        </div>
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalSymptomsClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div [ngStyle]="{'display':displayMedicaments}" class="modal" id="medModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalMedicamentsClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">Medicament</label>
+			
+			<select [(ngModel)]="chosenMedicament" class="form-control" id="fieldMedc" name="fieldMed">
+			  <option *ngFor="let m of medicaments" [ngValue]="m" >{{m.name}}</option>
+			</select>
+		</div>
+		<button class="btn btn-success" (click)="addMed()">Choose Medicament</button>
+        
+          <div id="divMed">
+          	<table id="tableMed" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td>Category</td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let med of chosenMedicaments">
+			
+				<td>
+			   		{{med.name}}
+			    </td>
+			    <td>
+			    	{{med.category}}
+			    </td>
+			    </tr>
+		    </tbody>
+		  </table>
+        </div>
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord()">Prescribe medicaments</button>
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalMedicamentsClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>

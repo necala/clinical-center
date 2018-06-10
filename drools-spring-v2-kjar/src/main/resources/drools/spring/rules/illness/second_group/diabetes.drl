@@ -1,0 +1,85 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import java.util.ArrayList;
+
+global ArrayList<Illness> illnesses;
+
+
+rule "All illnesses - Diabetes"
+	agenda-group "all-illnesses"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.OFTEN_URINATION || term == Symptom.Term.WEIGHT_LOSS 
+                || term == Symptom.Term.FATIGUE || term == Symptom.Term.NAUSEA_AND_VOMITTING
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then    	
+        if (!$resList.isEmpty()){
+	        Illness i = new Illness();
+	    	i.setCategory(Illness.Category.SECOND);
+	    	i.setName("Diabetes");
+	    	i.setSymptoms($resList);
+	    	illnesses.add(i);
+        } 
+end
+
+
+rule "Illness - DIABETES"
+	agenda-group "one-illness"
+    when
+        $s1 : Symptom( term == Symptom.Term.OFTEN_URINATION )
+        $s2 : Symptom( term == Symptom.Term.WEIGHT_LOSS )
+        $s3 : Symptom( term == Symptom.Term.FATIGUE )
+        $s4 : Symptom( term == Symptom.Term.NAUSEA_AND_VOMITTING )
+      
+    then
+    	Illness i = new Illness();
+    	i.setCategory(Illness.Category.SECOND);
+    	i.setName("Diabetes");
+    	i.getSymptoms().add($s1);
+    	i.getSymptoms().add($s2);
+    	i.getSymptoms().add($s3);
+    	i.getSymptoms().add($s4);
+    	System.out.print("ovdje je nova bolest: "+ i.getName());
+    	illnesses.add(i);
+    	insert(i);
+    
+end
+
+rule "Diabetes - Symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( name == "Diabetes" )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.OFTEN_URINATION);
+    	s.setSpecific(false);
+    	s.setHelper("Often urination");
+    	$i.getSymptoms().add(s);
+    	Symptom s1 = new Symptom();
+    	s1.setTerm(Symptom.Term.WEIGHT_LOSS);
+    	s1.setSpecific(false);
+    	s1.setHelper("Weight loss");
+    	$i.getSymptoms().add(s1);
+    	Symptom s2 = new Symptom();
+        s2.setTerm(Symptom.Term.FATIGUE);
+    	s2.setSpecific(false);
+    	s2.setHelper("Fatigue");
+    	$i.getSymptoms().add(s2);
+    	Symptom s3 = new Symptom();
+    	s3.setTerm(Symptom.Term.NAUSEA_AND_VOMITTING);
+    	s3.setSpecific(false);
+    	s3.setHelper("Nausea & vomitting");
+    	$i.getSymptoms().add(s3);
+    	update($i);
+    	
+end

@@ -1,0 +1,81 @@
+<div id="medicaments">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td>Category</td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let med of medicaments">
+			
+				<td title="Click to change ingridients for this medicament!" (click)="gotoIngredients(med.id)">
+			   		{{med.name}}
+			    </td>
+			    <td title="Click to change ingridients for this medicament!" (click)="gotoIngredients(med.id)">
+			    	{{med.category}}
+			    </td>
+			    <td>
+			    	<button class="btn btn-warning" (click)="addMedicamentAllergic(med.id)">Patient Allergic</button>
+			    </td>
+			    <td>
+			    	<button class="btn btn-danger" (click)="deleteMedicament(med.id)">Delete</button>
+			    </td>
+			    </tr>
+		    </tbody>
+		</table>
+	</div>
+	<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Medicament</button>
+	
+	<div [ngStyle]="{'display':display}" class="modal" id="symModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+          <div class="row" *ngIf="!addAllergy">
+			<div id="nameValue">
+				<label for="fieldName" class="form-control-label">Name:</label>
+			    <input type="text" [(ngModel)]="medicament.name" placeholder="Name"
+			               class="form-control" id="fieldName" name="fieldName1" >
+		       
+			</div>
+			<div id="category">
+				<label for="field1c" class="form-control-label">Category</label>
+				<select [(ngModel)]="medicament.category"
+			                    class="form-control" id="field1c" name="field1">
+			              <option value="ANTIBIOTICS">Antibiotics</option>
+			              <option value="ANALGESICS">Analgesics</option>
+			              <option value="OTHER">Other</option>
+				</select>
+			</div>
+        </div>
+        <div *ngIf="addAllergy">
+        	<div class="row">
+				<label for="fieldPatient" class="form-control-label">Patient Nr:</label>
+				    <input type="text"  [(ngModel)]="patientId" placeholder="Patient Nr"
+				               class="form-control" id="fieldPatient" name="fieldPatient1" >
+			</div>
+        </div>
+          
+
+        <div class="modal-footer">
+          <ng-container *ngIf="!addAllergy">
+          	<button class="btn btn-success" data-dismiss="modal" (click)="saveMedicament()">Add Medicament</button>
+          </ng-container>
+          <ng-container *ngIf="addAllergy">
+          	<button class="btn btn-success" data-dismiss="modal" (click)="saveAllergy()">Add Allergy For Patient</button>
+          </ng-container>
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

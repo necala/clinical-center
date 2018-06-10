@@ -1,0 +1,22 @@
+#ingridients{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+.row{
+  display: table-row;
+}
+
+#symModal {
+	width: 700px;
+	left:15%;
+	top: 5%;
+}
+
+#divSym{
+  overflow:auto;
+  height: 400px;
+  width: 500px;
+}
+

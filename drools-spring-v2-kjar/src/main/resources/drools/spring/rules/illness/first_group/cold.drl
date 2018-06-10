@@ -1,0 +1,107 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.User;
+import java.util.List;
+import java.util.ArrayList;
+
+global ArrayList<Illness> illnesses;
+global ArrayList<Illness> allSymptomIllnesses;
+global Illness oneIllness;
+
+rule "All illnesses - COLD"
+	agenda-group "all-illnesses"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.RUNNY_NOSE || term == Symptom.Term.SORE_THROAT || term == Symptom.Term.HEADACHE
+                || term == Symptom.Term.SNEEZE || term == Symptom.Term.COUGH
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then    	
+        if (!$resList.isEmpty()){
+	        Illness i = new Illness();
+	    	i.setCategory(Illness.Category.FIRST);
+	    	i.setName("Cold");
+	    	i.setSymptoms($resList);
+	    	illnesses.add(i);
+        } 
+end
+
+
+rule "One illness - COLD"
+	agenda-group "one-illness"
+    when
+        $list: List() from collect(Symptom( ))
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.RUNNY_NOSE || term == Symptom.Term.SORE_THROAT || term == Symptom.Term.HEADACHE
+                || term == Symptom.Term.SNEEZE || term == Symptom.Term.COUGH
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then 
+    	if ($resList.size() == 5){
+    		System.out.println("ovdje je nova bolest COLD sa svim simptomima!");
+    		Illness illness = new Illness();
+    		illness.setCategory(Illness.Category.FIRST);
+    		illness.setName("Cold");
+    		illness.setSymptoms($resList);
+    		allSymptomIllnesses.add(illness);
+        }else{
+	        if ($resList.size() >= 4){
+		        Illness i = new Illness();
+		    	i.setCategory(Illness.Category.FIRST);
+		    	i.setName("Cold");
+		    	System.out.println("ovdje je nova bolest: "+ i.getName());
+		    	i.setSymptoms($resList);
+		    	illnesses.add(i);
+	        }
+	    }
+        
+end
+
+
+rule "COLD - Symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( name == "Cold" )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.RUNNY_NOSE);
+    	s.setHelper("Runny nose");
+    	s.setSpecific(false);
+    	$i.getSymptoms().add(s);
+    	Symptom s1 = new Symptom();
+    	s1.setTerm(Symptom.Term.SORE_THROAT);
+    	s1.setSpecific(false);
+    	s1.setHelper("Sore throat");
+    	$i.getSymptoms().add(s1);
+    	Symptom s2 = new Symptom();
+        s2.setTerm(Symptom.Term.HEADACHE);
+    	s2.setSpecific(false);
+    	s2.setHelper("Headache");
+    	$i.getSymptoms().add(s2);
+    	Symptom s3 = new Symptom();
+    	s3.setTerm(Symptom.Term.SNEEZE);
+    	s3.setSpecific(false);
+    	s3.setHelper("Sneeze");
+    	$i.getSymptoms().add(s3);
+    	Symptom s4 = new Symptom();
+    	s4.setTerm(Symptom.Term.COUGH);
+    	s4.setSpecific(false);
+    	s4.setHelper("Cough");
+    	$i.getSymptoms().add(s4);
+    	update($i);
+    	
+end
+

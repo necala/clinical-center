@@ -1,0 +1,32 @@
+#symptoms{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+.row{
+  display: table-row;
+}
+
+#term, #tempValue{
+	display:inline-block;
+}
+
+#all, #one {
+	display: none;
+}
+
+#illnessModal, #symModal, #medModal {
+  top: 5%;
+}
+
+#symModal, #medModal {
+	width: 700px;
+	left:15%;
+}
+
+#divSym, #divMed{
+  overflow:auto;
+  height: 300px;
+}
+

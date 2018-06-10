@@ -1,0 +1,70 @@
+<div id="ingridients">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let i of ingridients">
+			
+				<td>
+			   		{{i.name}}
+			    </td>
+			    <td>
+			    	<button class="btn btn-warning" (click)="addIngridientAllergic(i.id)">Patient Allergic</button>
+			    </td>
+			    <td>
+			    	<button class="btn btn-danger" (click)="deleteIngridient(i.id)">Delete</button>
+			    </td>
+			    </tr>
+		    </tbody>
+		</table>
+	</div>
+	<button class="btn btn-primary" (click)="back()">Back</button>
+	<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Ingridient</button>
+	
+	<div [ngStyle]="{'display':display}" class="modal" id="symModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+          <div class="row" *ngIf="!addAllergy">
+			<div id="nameValue">
+				<label for="fieldName" class="form-control-label">Name:</label>
+			    <input type="text" [(ngModel)]="ingridient.name" placeholder="Name"
+			               class="form-control" id="fieldName" name="fieldName1" >
+		     
+		    </div>  
+			</div>
+			<div *ngIf="addAllergy">
+        	<div class="row">
+				<label for="fieldPatient" class="form-control-label">Patient Nr:</label>
+				    <input type="text"  [(ngModel)]="patientId" placeholder="Patient Nr"
+				               class="form-control" id="fieldPatient" name="fieldPatient1" >
+			</div>
+        </div>
+		
+        </div>
+        
+
+        <div class="modal-footer">
+          <ng-container *ngIf="!addAllergy">
+          	<button class="btn btn-success" data-dismiss="modal" (click)="saveIngridient()">Add Ingridient</button>
+          </ng-container>
+          <ng-container *ngIf="addAllergy">
+          	<button class="btn btn-success" data-dismiss="modal" (click)="saveAllergy()">Add Allergy For Patient</button>
+          </ng-container>
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

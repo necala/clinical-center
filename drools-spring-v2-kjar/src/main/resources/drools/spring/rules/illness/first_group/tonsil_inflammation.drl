@@ -1,0 +1,123 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.User;
+import java.util.List;
+import java.util.ArrayList;
+
+global ArrayList<Illness> illnesses;
+global ArrayList<Illness> allSymptomIllnesses;
+
+rule "All illnesses - Tonsil Inflamation"
+	agenda-group "all-illnesses"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.SORE_THROAT || term == Symptom.Term.PAIN_TO_EARS || term == Symptom.Term.HEADACHE
+                || term == Symptom.Term.TEMP_BETWEEN_40_AND_41 || term == Symptom.Term.SHIVER
+                || term == Symptom.Term.APPETITE_LOSS || term == Symptom.Term.TIREDNESS
+                || term == Symptom.Term.YELLOW_SECRETION_FROM_NOSE
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then    	
+        if (!$resList.isEmpty()){
+	        Illness i = new Illness();
+	    	i.setCategory(Illness.Category.FIRST);
+	    	i.setName("Tonsil Inflammation");
+	    	i.setSymptoms($resList);
+	    	illnesses.add(i);
+        } 
+end
+
+rule "One illness - Tonsil Inflamation"
+	agenda-group "one-illness"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.SORE_THROAT || term == Symptom.Term.PAIN_TO_EARS || term == Symptom.Term.HEADACHE
+                || term == Symptom.Term.TEMP_BETWEEN_40_AND_41 || term == Symptom.Term.SHIVER
+                || term == Symptom.Term.APPETITE_LOSS || term == Symptom.Term.TIREDNESS
+                || term == Symptom.Term.YELLOW_SECRETION_FROM_NOSE
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then 
+    	if ($resList.size() == 8){
+        	Illness illness = new Illness();
+	    	illness.setCategory(Illness.Category.FIRST);
+	    	illness.setName("Tonsil Inflammation");
+	    	System.out.println("ovdje je nova bolest: sa svim simptomima "+ illness.getName());
+	    	illness.setSymptoms($resList);
+	    	allSymptomIllnesses.add(illness);
+        } else {
+        	if ($resList.size() >= 4){
+		        Illness i = new Illness();
+		    	i.setCategory(Illness.Category.FIRST);
+		    	i.setName("Tonsil Inflammation");
+		    	System.out.println("ovdje je nova bolest: "+ i.getName());
+		    	i.setSymptoms($resList);
+		    	illnesses.add(i);
+	        } 
+        }   	
+end
+
+
+rule "Tonsil Inflammation - Symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( name == "Tonsil Inflammation" )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.PAIN_TO_EARS);
+    	s.setSpecific(false);
+    	s.setHelper("Pain to ears");
+    	$i.getSymptoms().add(s);
+    	Symptom s1 = new Symptom();
+    	s1.setTerm(Symptom.Term.SORE_THROAT);
+    	s1.setSpecific(false);
+    	s1.setHelper("Sore throat");
+    	$i.getSymptoms().add(s1);
+    	Symptom s2 = new Symptom();
+        s2.setTerm(Symptom.Term.HEADACHE);
+    	s2.setSpecific(false);
+    	s2.setHelper("Headache");
+    	$i.getSymptoms().add(s2);
+    	Symptom s3 = new Symptom();
+    	s3.setTerm(Symptom.Term.TEMP_BETWEEN_40_AND_41);
+    	s3.setSpecific(false);
+    	s3.setHelper("Temperature between 40 and 41");
+    	$i.getSymptoms().add(s3);
+    	Symptom s4 = new Symptom();
+    	s4.setTerm(Symptom.Term.SHIVER);
+    	s4.setSpecific(false);
+    	s4.setHelper("Shiver");
+    	$i.getSymptoms().add(s4);
+    	Symptom s5 = new Symptom();
+    	s5.setTerm(Symptom.Term.APPETITE_LOSS);
+    	s5.setSpecific(false);
+    	s5.setHelper("Appetite loss");
+    	$i.getSymptoms().add(s5);
+    	Symptom s6 = new Symptom();
+    	s6.setTerm(Symptom.Term.TIREDNESS);
+    	s6.setSpecific(false);
+    	s6.setHelper("Tiredness");
+    	$i.getSymptoms().add(s6);
+    	Symptom s7 = new Symptom();
+    	s7.setTerm(Symptom.Term.YELLOW_SECRETION_FROM_NOSE);
+    	s7.setSpecific(false);
+    	s7.setHelper("Yellow secretion from nose");
+    	$i.getSymptoms().add(s7);
+    	update($i);
+    	
+end

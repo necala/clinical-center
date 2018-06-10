@@ -1,0 +1,174 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.User;
+import drools.spring.example.model.Patient;
+import drools.spring.example.model.Record;
+import drools.spring.example.model.events.ColdOrFeverEvent;
+import java.util.List;
+import java.util.ArrayList;
+
+global ArrayList<Illness> illnesses;
+global ArrayList<Illness> allSymptomIllnesses;
+global String pId;
+
+rule "All illnesses - Sinus Infection"
+	agenda-group "all-illnesses"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.EYE_SWELLING || term == Symptom.Term.HEADACHE || term == Symptom.Term.YELLOW_SECRETION_FROM_NOSE
+                || term == Symptom.Term.SORE_THROAT || term == Symptom.Term.TEMP_OVER_38
+                || term == Symptom.Term.COUGH 
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then    	
+        if (!$resList.isEmpty()){
+	        Illness i = new Illness();
+	    	i.setCategory(Illness.Category.FIRST);
+	    	i.setName("Sinus Infection");
+	    	i.setSymptoms($resList);
+	    	illnesses.add(i);
+        } 
+end
+
+rule "Specific request - all illnesses - Sinus Infection"
+	agenda-group "special-request-all-illnesses"
+    when
+        $cf: ColdOrFeverEvent( illnessName == "Cold" || illnessName == "Fever" && patientId == pId )
+    then    	
+        if (!illnesses.isEmpty()){
+        	for (Object o: illnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Sinus Infection")){
+        			Symptom s = new Symptom();
+				    s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+				   	s.setSpecific(true);
+				   	s.setHelper("Suffered from cold/fever in past 60 days");
+        			i.getSymptoms().add(s);
+        			break;
+        		}
+        	}
+        }else{
+        	Illness i = new Illness();
+	    	i.setCategory(Illness.Category.FIRST);
+	    	i.setName("Sinus Infection");
+	    	Symptom s = new Symptom();
+			s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+	    	s.setSpecific(true);
+			s.setHelper("Suffered from cold/fever in past 60 days");
+	    	i.getSymptoms().add(s);
+	    	illnesses.add(i);
+        }
+end
+
+rule "One illness - Sinus Infection"
+	agenda-group "one-illness"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.EYE_SWELLING || term == Symptom.Term.HEADACHE || term == Symptom.Term.YELLOW_SECRETION_FROM_NOSE
+                || term == Symptom.Term.SORE_THROAT || term == Symptom.Term.TEMP_OVER_38
+                || term == Symptom.Term.COUGH 
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then   
+        if ($resList.size() == 6){
+        	Illness illness  = new Illness();
+	    	illness.setCategory(Illness.Category.FIRST);
+	    	illness.setName("Sinus Infection");
+	    	System.out.println("ovdje je nova bolest sa svim simptomima: "+ illness.getName());
+	    	illness.setSymptoms($resList);
+	    	allSymptomIllnesses.add(illness);
+        } else {
+        	if ($resList.size() >= 4){
+		        Illness i = new Illness();
+		    	i.setCategory(Illness.Category.FIRST);
+		    	i.setName("Sinus Infection");
+		    	System.out.println("ovdje je nova bolest: "+ i.getName());
+		    	i.setSymptoms($resList);
+		    	illnesses.add(i);
+	        }
+        }  	
+end
+
+rule "Special request - one illness - Sinus Infection"
+	agenda-group "special-request-one-illness"
+    when
+        $cf: ColdOrFeverEvent( illnessName == "Cold" || illnessName == "Fever" && patientId == pId )
+    then    	
+        if (!allSymptomIllnesses.isEmpty()){
+        	for (Object o : allSymptomIllnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Sinus Infection")){
+        			if (i.getSymptoms().size() == 6){
+        				Symptom s = new Symptom();
+				    	s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+				    	s.setSpecific(true);
+				    	s.setHelper("Suffered from cold/fever in past 60 days");
+        				i.getSymptoms().add(s);
+        				break;
+        			}else{
+        				illnesses.remove(i);
+        				break;
+        			}
+        		}
+        	}
+        }
+end
+
+rule "Sinus Infection - Symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( name == "Sinus Infection" )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.EYE_SWELLING);
+    	s.setSpecific(false);
+    	s.setHelper("Eye swelling");
+    	$i.getSymptoms().add(s);
+    	Symptom s1 = new Symptom();
+    	s1.setTerm(Symptom.Term.SORE_THROAT);
+    	s1.setSpecific(false);
+    	s1.setHelper("Sore throat");
+    	$i.getSymptoms().add(s1);
+    	Symptom s2 = new Symptom();
+        s2.setTerm(Symptom.Term.HEADACHE);
+    	s2.setSpecific(false);
+    	s2.setHelper("Headache");
+    	$i.getSymptoms().add(s2);
+    	Symptom s3 = new Symptom();
+    	s3.setTerm(Symptom.Term.YELLOW_SECRETION_FROM_NOSE);
+    	s3.setSpecific(false);
+    	s3.setHelper("Yellow secretion from nose");
+    	$i.getSymptoms().add(s3);
+    	Symptom s4 = new Symptom();
+    	s4.setTerm(Symptom.Term.TEMP_OVER_38);
+    	s4.setSpecific(false);
+    	s4.setHelper("Temperature over 38");
+    	$i.getSymptoms().add(s4);
+    	Symptom s5 = new Symptom();
+    	s5.setTerm(Symptom.Term.COUGH);
+    	s5.setSpecific(false);
+    	s5.setHelper("Cough");
+    	$i.getSymptoms().add(s5);
+    	Symptom s6 = new Symptom();
+    	s6.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+    	s6.setSpecific(true);
+    	s6.setHelper("Suffered from cold/fever in past 60 days");
+    	$i.getSymptoms().add(s6);
+    	update($i);
+    	
+end

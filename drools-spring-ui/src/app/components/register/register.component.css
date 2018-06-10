@@ -1,0 +1,10 @@
+.form-group{
+  display: inline;
+  flex-direction: row;
+  justify-content: left;
+  align-items: left;
+}
+
+#registration{
+	left: 20%;
+}

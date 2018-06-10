@@ -1,0 +1,42 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Record;
+import drools.spring.example.model.Medicament;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.User;
+import drools.spring.example.model.Patient;
+import java.util.List;
+import java.util.ArrayList;
+
+global String pId;
+
+/*
+rule "Check if patient is allergic to medicament"
+	agenda-group "check-allergies"
+    when
+        $medicaments: List(size > 0) from collect(Medicament( ))
+        //$patients: List() from collect(Patient( patientId == pId ))
+       
+        Number(intValue == 0) from accumulate(
+            $med: Medicament(
+                $p: Patient(patientId == pId && allergicMedicament == $med.name)
+            ) from $medicaments,
+            init(int count = 0;),
+            action(count+=1;),
+            result(count)
+        )
+    then    	
+        System.out.println("Nema nijedne alergije");
+end
+*/
+
+rule "Nesto"
+	agenda-group "check-allergies"
+	when
+		$medicaments: List(size > 0) from collect(Medicament( ))
+		
+	then
+		System.out.println("CAOS");
+		
+end
+

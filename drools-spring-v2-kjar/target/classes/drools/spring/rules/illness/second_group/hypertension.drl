@@ -1,0 +1,97 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.User;
+import drools.spring.example.model.events.HighPressureEvent;
+import java.util.List;
+import java.util.ArrayList;
+
+global ArrayList<Illness> illnesses;
+global ArrayList<Illness> allSymptomIllnesses;
+global String pId;
+
+rule "At least 10 times patient had high pressure in last 6months - all ilnesses"
+	agenda-group "all-illnesses"
+    when
+        $hp: HighPressureEvent( $p: patientId )
+        Number(intValue >= 10) from accumulate(
+            $hp2: HighPressureEvent(
+                this != $hp, 
+                patientId == $p, 
+                this meets[183d] $hp
+            ),
+            count($hp2)
+        )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.TEN_TIMES_HIGH_PRESSURE_IN_LAST_6_MONTHS);
+    	s.setSpecific(false);
+    	s.setHelper("Patient had 10 times high pressure in last 6 months");
+    	Illness i = new Illness();
+	    i.setCategory(Illness.Category.SECOND);
+	   	i.setName("Hypertension");
+	   	i.getSymptoms().add(s);
+	   	boolean flag = true;
+	   	for (Object o: illnesses){
+	   		Illness i1 = (Illness) o;
+	   		if (i1.getName().equals("Hypertension")){
+	   			flag = false;
+	   			break;
+	   		}
+	   	}
+	   	if (flag){
+	   		illnesses.add(i);
+	   	}
+    	System.out.println("duzina liste: " + illnesses.size());
+end
+
+rule "At least 10 times patient had high pressure in last 6months -one ilness"
+	agenda-group "one-illness"
+    when
+        $hp: HighPressureEvent( $p: patientId )
+        Number(intValue >= 10) from accumulate(
+            $hp2: HighPressureEvent(
+                this != $hp, 
+                patientId == $p, 
+                this meets[183d] $hp
+            ),
+            count($hp2)
+        )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.TEN_TIMES_HIGH_PRESSURE_IN_LAST_6_MONTHS);
+    	s.setSpecific(false);
+    	s.setHelper("Patient had 10 times high pressure in last 6 months");
+    	Illness i = new Illness();
+	    i.setCategory(Illness.Category.SECOND);
+	   	i.setName("Hypertension");
+	   	i.getSymptoms().add(s);
+	   	boolean flag = true;
+	   	for (Object o: allSymptomIllnesses){
+	   		Illness i1 = (Illness) o;
+	   		if (i1.getName().equals("Hypertension")){
+	   			flag = false;
+	   			break;
+	   		}
+	   	}
+	   	if (flag){
+	   		illnesses.add(i);
+	   	}
+    	allSymptomIllnesses.add(i);
+end
+
+rule "Hypertension - Symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( name == "Hypertension" )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.TEN_TIMES_HIGH_PRESSURE_IN_LAST_6_MONTHS);
+    	s.setSpecific(false);
+    	s.setHelper("Patient had 10 times high pressure in last 6 months");
+    	$i.getSymptoms().add(s);
+    	update($i);
+    	
+end

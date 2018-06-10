@@ -1,0 +1,33 @@
+<div id="login" class="col-md-6 col-md-offset-3">
+  <form name="form" (ngSubmit)="f.form.valid && login()" #f="ngForm" novalidate>
+    <div>
+      <label>Username</label>
+      <input type="text" id="loginUsername" class="form-control" name="username" [(ngModel)]="model.username" #username="ngModel" required />
+      <div *ngIf="f.submitted && !username.valid" class="help-block">Username is required</div>
+    </div>
+    <div class="form-group" [ngClass]="{ 'has-error': f.submitted && !password.valid }">
+      <label>Password</label>
+      <input type="password" id="loginPassword" class="form-control" name="password" [(ngModel)]="model.password" #password="ngModel" required />
+      <div *ngIf="f.submitted && !password.valid" class="help-block">Password is required</div>
+    </div>
+    <div class="form-group">
+      <button id="loginButton" class="btn btn-primary">Login</button>
+    </div>
+  </form>
+  <a id="registrationElement" routerLink="../register">Not Registered?</a>
+</div>
+
+<div [ngStyle]="{'display':errorModalDisplay}" class="modal" id="errorsModal" tabindex="-1">
+  <div class="modal-dialog alert alert-danger">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button class="close" data-dismiss="modal" (click)="onErrorModalClose()">&times;</button>
+        <h2 class="modal-title">Login credentials are wrong. Please try again.</h2>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-dismiss="modal" (click)="onErrorModalClose()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+

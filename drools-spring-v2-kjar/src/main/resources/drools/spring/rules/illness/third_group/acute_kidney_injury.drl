@@ -1,0 +1,238 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.Medicament;
+import drools.spring.example.model.events.IllnessWithHighTempEvent;
+import drools.spring.example.model.events.PatientUsesAntibioticsEvent;
+import java.util.ArrayList;
+
+global ArrayList<Illness> illnesses;
+global ArrayList<Illness> allSymptomIllnesses;
+global String pId;
+
+
+rule "All illnesses - Acute Kidney Injury"
+	agenda-group "all-illnesses"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.FATIGUE || term == Symptom.Term.CHOKING 
+                || term == Symptom.Term.LEGS_AND_JOINTS_SWELLING || term == Symptom.Term.DIARRHEA
+                || term == Symptom.Term.SURGERY_RECOVERY
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then    	
+        if (!$resList.isEmpty()){
+	        Illness i = new Illness();
+	    	i.setCategory(Illness.Category.THIRD);
+	    	i.setName("Acute Kidney Injury");
+	    	i.setSymptoms($resList);
+	    	illnesses.add(i);
+        } 
+end
+
+rule "Patient diagnosed with illness which has symptom high temp - All ilnesses"
+	agenda-group "special-request-all-illnesses"
+    when
+        $temp: IllnessWithHighTempEvent( illnessName == "Fever" || illnessName == "Sinus Infection" || 
+        								 illnessName == "Tonsil Inflamation" && patientId == pId )
+    then    	
+        if (!illnesses.isEmpty()){
+        	for (Object o: illnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Acute Kidney Injury")){
+        			Symptom s = new Symptom();
+				    s.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
+    				s.setSpecific(true);
+    				s.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
+        			i.getSymptoms().add(s);
+        			break;
+        		}
+        	}
+        }else{
+        	Illness i = new Illness();
+	    	i.setCategory(Illness.Category.THIRD);
+	    	i.setName("Acute Kidney Injury");
+	    	Symptom s = new Symptom();
+			s.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
+    		s.setSpecific(true);
+    		s.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
+	    	i.getSymptoms().add(s);
+	    	illnesses.add(i);
+        }
+end
+
+rule "Patient uses antibiotics"
+	agenda-group "special-request-all-illnesses"
+    when
+        $temp: PatientUsesAntibioticsEvent( medicamentCategory == Medicament.Category.ANTIBIOTICS && patientId == pId )
+    then    	
+        if (!illnesses.isEmpty()){
+        	for (Object o: illnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Acute Kidney Injury")){
+        			Symptom s = new Symptom();
+				    s.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
+			    	s.setSpecific(true);
+			    	s.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
+        			i.getSymptoms().add(s);
+        			break;
+        		}
+        	}
+        }else{
+        	Illness i = new Illness();
+	    	i.setCategory(Illness.Category.THIRD);
+	    	i.setName("Acute Kidney Injury");
+	    	Symptom s = new Symptom();
+			s.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
+			s.setSpecific(true);
+	    	s.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
+	    	illnesses.add(i);
+        }
+end
+
+rule "One illness Acute Kindney Injury"
+	agenda-group "one-illness"
+    when
+        $list: List() from collect(Symptom( ))
+       
+        $resList: List() from accumulate(
+            $sym: Symptom(
+                term == Symptom.Term.FATIGUE || term == Symptom.Term.CHOKING 
+                || term == Symptom.Term.LEGS_AND_JOINTS_SWELLING || term == Symptom.Term.DIARRHEA
+            ) from $list,
+            init(List<Symptom> list1 = new ArrayList<Symptom>();),
+            action(list1.add($sym);),
+            result(list1)
+        )
+    then    	
+        if (!$resList.isEmpty() && $resList.size() >= 2){
+        	
+        	Illness i = new Illness();
+		   	i.setCategory(Illness.Category.THIRD);
+		   	i.setName("Acute Kidney Injury");
+		   	i.setSymptoms($resList);
+		   	allSymptomIllnesses.add(i);
+		    
+        } 
+end
+
+
+rule "User recovers from surgery - One ilnesses"
+	agenda-group "special-request-one-illness"
+    when
+        $symptom: Symptom( term == Symptom.Term.SURGERY_RECOVERY)
+    then    	
+        if (!allSymptomIllnesses.isEmpty()){
+        	for (Object o : allSymptomIllnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Acute Kidney Injury")){
+        			if (i.getSymptoms().size() >= 2){
+        				Symptom s = new Symptom();
+						s.setTerm(Symptom.Term.SURGERY_RECOVERY);
+				    	s.setSpecific(true);
+				   		s.setHelper("Surgery recovery");
+	        			i.getSymptoms().add(s);
+	        			break;
+        			}
+        		}
+        	}
+        }
+end
+
+
+rule "Patient diagnosed with illness which has symptom high temp - One ilnesses"
+	agenda-group "special-request-one-illness"
+    when
+        $temp: IllnessWithHighTempEvent( illnessName == "Fever" || illnessName == "Sinus Infection" || 
+        								 illnessName == "Tonsil Inflamation" && patientId == pId )
+    then    	
+        if (!allSymptomIllnesses.isEmpty()){
+        	for (Object o : allSymptomIllnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Acute Kidney Injury")){
+        			if (i.getSymptoms().size() >= 2){
+        				Symptom s = new Symptom();
+						s.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
+				    	s.setSpecific(true);
+				    	s.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
+	        			i.getSymptoms().add(s);
+	        			break;
+        			}
+        		}
+        	}
+        }
+end
+
+rule "Patient used antibiotics - One ilnesses"
+	agenda-group "special-request-one-illness"
+    when
+        $temp: PatientUsesAntibioticsEvent( medicamentCategory == Medicament.Category.ANTIBIOTICS && patientId == pId )
+    then    	
+        if (!allSymptomIllnesses.isEmpty()){
+        	for (Object o : allSymptomIllnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Acute Kidney Injury")){
+        			if (i.getSymptoms().size() >= 2){
+        				Symptom s = new Symptom();
+						s.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
+				    	s.setSpecific(true);
+				    	s.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
+	        			i.getSymptoms().add(s);
+	        			break;
+        			}
+        		}
+        	}
+        }
+end
+
+rule "Acute Kidney Injury - Symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( name == "Acute Kidney Injury" )
+    then
+    	Symptom s = new Symptom();
+    	s.setTerm(Symptom.Term.CHOKING);
+    	s.setSpecific(false);
+    	s.setHelper("Choking");
+    	$i.getSymptoms().add(s);
+    	Symptom s1 = new Symptom();
+    	s1.setTerm(Symptom.Term.LEGS_AND_JOINTS_SWELLING);
+    	s1.setSpecific(false);
+    	s1.setHelper("Legs and joints swelling");
+    	$i.getSymptoms().add(s1);
+    	Symptom s2 = new Symptom();
+        s2.setTerm(Symptom.Term.FATIGUE);
+    	s2.setSpecific(false);
+    	s2.setHelper("Fatigue");
+    	$i.getSymptoms().add(s2);
+    	Symptom s3 = new Symptom();
+    	s3.setTerm(Symptom.Term.DIARRHEA);
+    	s3.setSpecific(false);
+    	s3.setHelper("Diarrhea");
+    	$i.getSymptoms().add(s3);
+    	Symptom s4 = new Symptom();
+    	s4.setTerm(Symptom.Term.SURGERY_RECOVERY);
+    	s4.setSpecific(true);
+    	s4.setHelper("Surgery recovery");
+    	$i.getSymptoms().add(s4);
+    	Symptom s5 = new Symptom();
+    	s5.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
+    	s5.setSpecific(true);
+    	s5.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
+    	$i.getSymptoms().add(s5);
+    	Symptom s6 = new Symptom();
+    	s6.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
+    	s6.setSpecific(true);
+    	s6.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
+    	$i.getSymptoms().add(s6);
+    	update($i);
+    	
+end
