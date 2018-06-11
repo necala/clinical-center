@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import drools.spring.example.model.Illness;
+import drools.spring.example.model.Medicament;
 import drools.spring.example.model.Record;
 import drools.spring.example.model.Symptom;
 import drools.spring.example.service.IllnessService;
@@ -55,17 +56,17 @@ public class IllnessController {
 	
 	@RequestMapping(value = "/illness/diagnose", method = RequestMethod.POST, 
 			consumes = "application/json", produces = "application/json")
-	public ResponseEntity<Record> diagnose(@RequestBody Record newRecord){
+	public ResponseEntity<String> diagnose(@RequestBody Record newRecord){
         
 		System.out.println("USla u kontroler za dijagnozu");
 		newRecord.setDate(new Date());
-		Record record = illnessService.diagnose(newRecord);
+		String allergies = illnessService.diagnose(newRecord);
 		
-		if (record == null){
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		if (allergies.equals("Patient allergic to: ")){
+			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		
-		return new ResponseEntity<>(record, HttpStatus.OK);
+		return new ResponseEntity<>(allergies, HttpStatus.BAD_REQUEST);
 		
 	}
 	

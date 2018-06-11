@@ -2,6 +2,7 @@ package drools.spring.rules;
 
 import drools.spring.example.model.Record;
 import drools.spring.example.model.Medicament;
+import drools.spring.example.model.Ingridient;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.User;
 import drools.spring.example.model.Patient;
@@ -9,34 +10,25 @@ import java.util.List;
 import java.util.ArrayList;
 
 global String pId;
+global ArrayList<Medicament> allergics;
+global ArrayList<Ingridient> allergicsIngr;
 
-/*
 rule "Check if patient is allergic to medicament"
-	agenda-group "check-allergies"
+	agenda-group "check-med-allergies"
     when
-        $medicaments: List(size > 0) from collect(Medicament( ))
-        //$patients: List() from collect(Patient( patientId == pId ))
-       
-        Number(intValue == 0) from accumulate(
-            $med: Medicament(
-                $p: Patient(patientId == pId && allergicMedicament == $med.name)
-            ) from $medicaments,
-            init(int count = 0;),
-            action(count+=1;),
-            result(count)
-        )
+        $medicament: Medicament( $medName: name )
+    	$p: Patient(patientId == pId && allergicMedicament.name == $medName)
     then    	
-        System.out.println("Nema nijedne alergije");
+    	allergics.add($medicament);
 end
-*/
 
-rule "Nesto"
-	agenda-group "check-allergies"
-	when
-		$medicaments: List(size > 0) from collect(Medicament( ))
-		
-	then
-		System.out.println("CAOS");
-		
+rule "Check if patient is allergic to ingridient"
+	agenda-group "check-ingr-allergies"
+    when
+        $ingridient: Ingridient( $ingrName: name )
+    	$p: Patient(patientId == pId && allergicIngridient.name == $ingrName)
+    then    	
+    	allergicsIngr.add($ingridient);
 end
+
 

@@ -16,11 +16,11 @@
 	display: none;
 }
 
-#illnessModal, #symModal, #medModal {
+#illnessModal, #symModal, #medModal, #allModal {
   top: 5%;
 }
 
-#symModal, #medModal {
+#symModal, #medModal, #allModal {
 	width: 700px;
 	left:15%;
 }

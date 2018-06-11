@@ -246,8 +246,35 @@
           
 
         <div class="modal-footer">
-          <button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord()">Prescribe medicaments</button>
+          <ng-container *ngIf="chosenMedicaments.length > 0">
+          	<button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord()">Prescribe medicaments</button>
+          </ng-container>
+          <ng-container *ngIf="chosenMedicaments.length == 0">
+          	<button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord()">Skip</button>
+          </ng-container>
           <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalMedicamentsClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div [ngStyle]="{'display':displayAllergy}" class="modal" id="allModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalAllergyClose()">&times;</button></span>
+       
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">{{errorMsg}}</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalAllergyClose()">Close</button>
         </div>
       </div>
     </div>

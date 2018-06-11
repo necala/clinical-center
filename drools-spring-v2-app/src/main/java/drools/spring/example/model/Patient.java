@@ -22,8 +22,8 @@ public class Patient implements Serializable {
 	private String firstName;
 	private String lastName;
 	private String patientId;
-	private Ingridient allergicIngridient;
-	private Medicament allergicMedicament;
+	private Ingridient allergicIngridient = new Ingridient();
+	private Medicament allergicMedicament = new Medicament();
 	
 	public Patient() {
 		super();
@@ -67,20 +67,22 @@ public class Patient implements Serializable {
 		this.patientId = patientId;
 	}
 
-	public Ingridient getAllergicIngridients() {
+	public Ingridient getAllergicIngridient() {
 		return allergicIngridient;
 	}
 
-	public void setAllergicIngridients(Ingridient allergicIngridients) {
-		this.allergicIngridient = allergicIngridients;
+	public void setAllergicIngridient(Ingridient allergicIngridient) {
+		this.allergicIngridient = allergicIngridient;
 	}
 
-	public Medicament getAllergicMedicaments() {
+	public Medicament getAllergicMedicament() {
 		return allergicMedicament;
 	}
 
-	public void setAllergicMedicaments(Medicament allergicMedicaments) {
-		this.allergicMedicament = allergicMedicaments;
+	public void setAllergicMedicament(Medicament allergicMedicament) {
+		this.allergicMedicament = allergicMedicament;
 	}
+
+	
 	
 }

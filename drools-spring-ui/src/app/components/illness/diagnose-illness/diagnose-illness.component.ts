@@ -41,6 +41,9 @@ export class DiagnoseIllnessComponent implements OnInit {
   chosenIllness: Illness;
   chosenMedicament: Medicament;
 
+  errorMsg: string;
+  displayAllergy: string;
+
   constructor( private illnessService: IllnessService,
                private router: Router, private medicamentService: MedicamentService ) {
     this.tempChosen = false;
@@ -51,6 +54,7 @@ export class DiagnoseIllnessComponent implements OnInit {
     this.display = 'none';
     this.displaySym = 'none';
     this.displayMedicaments = 'none';
+    this.displayAllergy = 'none';
     this.diagnostic = false;
     this.patient = new Patient();
     this.record = new Record();
@@ -60,6 +64,7 @@ export class DiagnoseIllnessComponent implements OnInit {
     this.chosenMedicaments = [];
     this.chosenIllness = new Illness();
     this.chosenMedicament = new Medicament();
+    this.errorMsg = '';
   }
 
   ngOnInit() {
@@ -109,8 +114,13 @@ export class DiagnoseIllnessComponent implements OnInit {
         this.allIllnesses = [];
         this.allIllnesses.push(res);
         this.display = 'block';
-
-      });
+      })
+      .catch(
+       res => {
+         this.errorMsg = 'There is no illness found for given symptoms!';
+         this.displayAllergy = 'block';
+       }
+     );
   }
 
   diagnoseAlone() {
@@ -184,6 +194,10 @@ export class DiagnoseIllnessComponent implements OnInit {
     this.displayMedicaments = 'none';
   }
 
+  onModalAllergyClose() {
+    this.displayAllergy = 'none';
+  }
+
   addMed() {
     this.chosenMedicaments.push(this.chosenMedicament);
   }
@@ -192,8 +206,20 @@ export class DiagnoseIllnessComponent implements OnInit {
     this.record.illness = this.chosenIllness;
     this.record.patient = this.patient;
     this.record.medicaments = this.chosenMedicaments;
-    this.illnessService.setDiagnostic(this.record);
-    this.display = 'none';
-    this.displayMedicaments = 'none';
+    this.illnessService.setDiagnostic(this.record).then(
+      res => {
+        this.display = 'none';
+        this.displayMedicaments = 'none';
+        this.router.navigate(['../']);
+      })
+     .catch(
+       res => {
+         console.log(res.error);
+         this.errorMsg = res.error;
+         this.displayAllergy = 'block';
+         this.chosenMedicaments = [];
+       }
+     );
+
   }
 }

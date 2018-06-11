@@ -43,7 +43,7 @@ public class MedicamentService {
 		
 		Patient patient = new Patient();
 		patient.setPatientId(patientId);
-		patient.setAllergicMedicaments(medicament);
+		patient.setAllergicMedicament(medicament);
 		
 		System.out.println("Pacijent: " + patientId + " sa alergijom na lijek: " + medicament.getName() + " u grupi: "
 				+ medicament.getCategory());
@@ -59,7 +59,7 @@ public class MedicamentService {
 		
 		Patient patient = new Patient();
 		patient.setPatientId(patientId);
-		patient.setAllergicIngridients(ingridient);
+		patient.setAllergicIngridient(ingridient);
 		
 		System.out.println("Pacijent: " + patientId + " sa alergijom na sastojak: " + ingridient.getName() );
 		

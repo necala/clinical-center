@@ -27,11 +27,10 @@ export class IllnessService {
       .then(res => res as Illness);
   }
 
-  public setDiagnostic(record: Record): Promise<Record> {
+  public setDiagnostic(record: Record): Promise<{}> {
 
-    return this.http.post('/api/illness/diagnose', record)
-      .toPromise()
-      .then(res => res as Record);
+    return this.http.post('/api/illness/diagnose', record, {responseType: 'text'})
+      .toPromise();
   }
 
   public getSymptoms(illness: Illness): Promise<Symptom[]> {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import drools.spring.example.model.Illness;
+import drools.spring.example.model.Ingridient;
 import drools.spring.example.model.Patient;
 import drools.spring.example.model.Record;
 import drools.spring.example.model.Symptom;
@@ -34,6 +36,12 @@ public class IllnessService {
     	log.info("Initialising a new example session.");
         this.kieContainer = kieContainer;
 	}
+    
+    @Autowired
+    MedicamentService medicamentService;
+    
+    @Autowired
+    IngridientService ingridientService;
     
     public ArrayList<Illness> getIllnesses(Illness illness1) {
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) illness1.getSymptoms();
@@ -147,7 +155,7 @@ public class IllnessService {
         return null;
     }
     
-    public Record diagnose(Record record){
+    public String diagnose(Record record){
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) record.getIllness().getSymptoms();
     	symptoms = handleSymptoms(symptoms);
     	record.getIllness().setSymptoms(symptoms);
@@ -155,14 +163,16 @@ public class IllnessService {
     	KieSession kieSession = kieContainer.newKieSession();
         kieSession.insert(record);
         kieSession.insert(record.getIllness());
-        kieSession.insert(record.getPatient());
+        
+        Patient patient = new Patient();
+        patient.setPatientId(record.getPatient().getPatientId());
+        patient.setAllergicMedicament(medicamentService.getOne(4L));
+        
+        kieSession.insert(patient);
         
         kieSession.setGlobal("pId", record.getPatient().getPatientId());
         
-        System.out.println("Pacijent: " + record.getPatient().getPatientId());
-        System.out.println("Bolest: " + record.getIllness().getName());
-        System.out.println("Ima lijekova: " + record.getMedicaments().size());
-        System.out.println("Prvi lijek: " + record.getMedicaments().get(0).getName());
+        
         
         if (record.getIllness().getName().equals("Cold")){
         	ColdOrFeverEvent cf = new ColdOrFeverEvent();
@@ -226,15 +236,57 @@ public class IllnessService {
         		kieSession.insert(pantb);
         	}
         	kieSession.insert(m);
+        	if (!m.getIngridients().isEmpty()){
+        		for (Ingridient i1: m.getIngridients()){
+            		kieSession.insert(i1);
+            	}
+        	}
+        	
         }
         
-        kieSession.getAgenda().getAgendaGroup("check-allergies").setFocus();
+        
+        kieSession.getAgenda().getAgendaGroup("check-med-allergies").setFocus();
+        
+        ArrayList<Medicament> allergicMedicaments = new ArrayList<Medicament>();
+        
+        kieSession.setGlobal("allergics", allergicMedicaments);
+        
+        ArrayList<Ingridient> allergicIngridients = new ArrayList<Ingridient>();
+        
+        kieSession.setGlobal("allergicsIngr", allergicIngridients);
+        
+        kieSession.fireAllRules();
+    	
+        allergicMedicaments = (ArrayList<Medicament>) kieSession.getGlobal("allergics");
+        
+        kieSession.getAgenda().getAgendaGroup("check-ingr-allergies").setFocus();
+        
         
         kieSession.fireAllRules();
         
-        kieSession.dispose();
+        allergicIngridients = (ArrayList<Ingridient>) kieSession.getGlobal("allergicsIngr");
         
-    	return record;
+        
+        String allergies = "Patient allergic to: ";
+        
+        if (!allergicMedicaments.isEmpty()){
+        	for (Medicament m1: allergicMedicaments){
+        		allergies+= m1.getName() + " ,";
+        	}
+        }
+        if (!allergicIngridients.isEmpty()){
+        	for (Ingridient i: allergicIngridients){
+        		allergies += i.getName() + ", ";
+        	}
+        }
+        if (!allergies.equals("Patient allergic to: ")){
+        	allergies = allergies.substring(0, allergies.length()-2);
+        	allergies+="!";
+        }
+        
+        kieSession.dispose();
+    	
+        return allergies;
     }
     
     public ArrayList<Symptom> getIllnessSymptoms(Illness illness){
