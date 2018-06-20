@@ -1,0 +1,33 @@
+<div id="reports">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Patient Name</td>
+		      <td>Patient ID</td>
+		      <td>Report Category</td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let r of reports">
+			
+				<td>
+			   		{{r.patient.firstName}} {{r.patient.lastName}} 
+			    </td>
+			    <td>
+			    	[ {{r.patient.patientId}} ]
+			    </td>
+			    <td>
+			    	{{r.helper}} 
+			    </td>
+			    </tr>
+		    </tbody>
+		</table>
+	</div>
+	
+
+  
+</div>

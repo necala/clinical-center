@@ -1,0 +1,143 @@
+<div id="symptoms">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Term</td>
+		      <td>Specific</td>
+		      <td></td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let s of symptoms">
+			
+				<td>
+			   		{{s.term}}
+			    </td>
+			    <td>
+			    	<ng-container *ngIf="s.specific">
+			    		Yes
+			    	</ng-container>
+			    	<ng-container *ngIf="!s.specific">
+			    		No
+			    	</ng-container>
+			    </td>
+			    <td>
+			    	<button class="btn btn-success" (click)="update(s.id)">Update</button>
+			    </td>
+			    <td>
+			    	<button class="btn btn-danger" (click)="deleteSymptom(s.id)">Delete</button>
+			    </td>
+			    </tr>
+		    </tbody>
+		</table>
+	</div>
+	<br/><br/>
+	<div *ngIf="role == 'ADMIN'">
+		<button class="btn btn-danger" (click)="back()">Back</button>
+		<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Symptom</button>
+	</div>
+	<div *ngIf="role != 'ADMIN'">
+		<button class="btn btn-danger" (click)="back()">Back</button>
+	</div>
+	
+	<div [ngStyle]="{'display':display}" class="modal" id="symModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+        	<div class="row">
+			<div id="nameValue">
+			    <label for="field1c" class="form-control-label">Symptom</label>
+					<select [(ngModel)]="symptom.term" (change)="termChanged()"
+		                    class="form-control" id="field1c" name="field1">
+		              <option value="RUNNY_NOSE">Runny nose</option>
+		              <option value="SORE_THROAT">Sore throat</option>
+		              <option value="HEADACHE">Headache</option>
+		              <option value="SNEEZE">Sneeze</option>
+		              <option value="COUGH">Cough</option>
+		              <option value="SHIVER">Shiver</option>
+		              <option value="TEMPERATURE">Temperature</option>
+		              <option value="PAIN_TO_EARS">Pain spread to ears</option>
+		              <option value="APPETITE_LOSS">Apetite loss</option>
+		              <option value="TIREDNESS">Tiredness</option>
+		              <option value="YELLOW_SECRETION_FROM_NOSE">Yellow nose secretion</option>
+		              <option value="EYE_SWELLING">Eye swelling</option>
+		              <option value="HIGH_PRESSURE">High pressure</option>
+		              <option value="OFTEN_URINATION">Often urination</option>
+		              <option value="WEIGHT_LOSS">Weight loss</option>
+		              <option value="FATIGUE">Fatigue</option>
+		              <option value="NAUSEA_AND_VOMITTING">Nausea and vomitting</option>
+		              <option value="NOCTURIA">Nocturia</option>
+		              <option value="LEGS_AND_JOINTS_SWELLING">Legs and joints swelling</option>
+		              <option value="CHOKING">Choking</option>
+		              <option value="CHEST_PAIN">Chest pain</option>
+		              <option value="SURGERY_RECOVERY">Surgery recovery</option>
+		              <option value="DIARRHEA">Diarrhea</option>
+					</select>
+				</div>
+				<div id="tempValue" *ngIf="tempChosen">
+					<label for="fieldtemp" class="form-control-label">Height:</label>
+				    <input type="number" step="0.5" min="35" max="45" [(ngModel)]="symptom.temperature" placeholder="Height"
+				               class="form-control" id="fieldtemp" name="fieldtemp1" >
+			       
+				</div>
+		     </div>
+		     <div class="row">
+			
+				<label for="field2" class="form-control-label">Other: </label>
+				<input type="checkbox" [(ngModel)]="other" onchange="otherChanged()"
+					    		class="form-control" id="field2" name="field21" >
+			</div>
+		     <div *ngIf="other">
+			     <div class="row">
+					<input type="text" [(ngModel)]="symptom.helper" placeholder="Other"
+				    		class="form-control" id="fieldOther" name="fieldOther1" >
+				</div>
+			</div>
+			<div class="row">
+			
+			<label for="fieldSpec" class="form-control-label">Specific: </label>
+			<input type="checkbox" [(ngModel)]="symptom.specific"
+				    		class="form-control" id="fieldSpec" name="fieldSpec1" >
+			</div>
+        </div>
+        
+
+        <div class="modal-footer">
+          <button class="btn btn-success" data-dismiss="modal" (click)="saveSymptom()">Save</button>
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div [ngStyle]="{'display':displayError}" class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalErrorClose()">&times;</button></span>
+       
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">Symptom already added!</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalErrorClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

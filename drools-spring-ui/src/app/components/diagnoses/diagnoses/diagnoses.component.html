@@ -1,0 +1,141 @@
+<div id="diagnoses">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Illness</td>
+		      <td>Patient</td>
+		      <td>Doctor</td>
+		      <td>Date</td>
+		      <td></td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let d of diagnoses">
+			
+				<td>
+			   		{{d.illnessName}}
+			    </td>
+			   	<td>
+			   		{{d.patientName}}
+			    </td>
+			    
+			    <td>
+			   		{{d.doctorName}} 
+			    </td>
+			    <td>
+			   		{{d.date | date:'HH:mm dd.MM.yyyy.'}}
+			    </td>
+			    <td>
+			    	<button class="btn btn-primary" (click)="getSymptoms(d.id)">Symptoms</button>
+			    </td>
+			    <td>
+			    	<button class="btn btn-primary" (click)="getMedicaments(d.id)">Medicaments</button>
+			    </td>
+			    <td>
+			    	<ng-container *ngIf="role == 'ADMIN'">
+			    		<button class="btn btn-danger" (click)="deleteDiagnose(d.id)">Delete</button>
+			    	</ng-container>
+			    </td>
+			    </tr>
+		    </tbody>
+		</table>
+	</div>
+	<br/><br/>
+	
+	<div *ngIf="role == 'DOCTOR'">
+		<button class="btn btn-success" data-dismiss="modal" (click)="newDiagnose()">Set Diagnose</button>
+	</div>
+	
+	
+	<div [ngStyle]="{'display':displayTable}" class="modal" id="medModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="showSymtpoms">
+	          <div id="divMed">
+	          	<table id="tableMed" class="table table-hover">
+				<thead>
+			    <tr>
+			      <td>Symptom</td>
+			      <td></td>
+				</tr>
+				</thead>
+			    <tbody>
+			    <tr id="tr" *ngFor="let s of symptoms">
+				
+					<td>
+				   		{{s.symptomTerm}}
+				    </td>
+				    </tr>
+			    </tbody>
+			  </table>
+	        </div>
+	        </div>
+	        
+	        <div *ngIf="!showSymtpoms">
+	          <div id="divMed1">
+	          	<table id="tableMed1" class="table table-hover">
+				<thead>
+			    <tr>
+			      <td>Medicament</td>
+			      <td>Category</td>
+			      <td></td>
+				</tr>
+				</thead>
+			    <tbody>
+			    <tr id="tr" *ngFor="let m of medicaments">
+				
+					<td>
+				   		{{m.medicamentName}}
+				    </td>
+				    <td>
+				   		{{m.medicamentCategory}}
+				    </td>
+				    </tr>
+			    </tbody>
+			  </table>
+	        </div>
+	        </div>
+	        
+        </div>
+
+        <div class="modal-footer">
+          
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+	
+	<div [ngStyle]="{'display':displayError}" class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalErrorClose()">&times;</button></span>
+       
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">{{errorMsg}}</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalErrorClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+	
+</div>

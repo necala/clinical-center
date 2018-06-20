@@ -29,15 +29,14 @@ export class LoginComponent implements OnInit {
       res => {
         if (res.username && res.category) {
           console.log(res.username);
+          console.log(res.id);
           console.log(res.category);
           localStorage.setItem('currentUser', JSON.stringify({
             id: res.id,
             username: res.username,
             category: res.category
           }));
-          if (res.category.toString() === Category[Category.DOCTOR]) {
-            this.router.navigate(['../']);
-          }
+          this.router.navigate(['../']);
         }
       }
     ).catch( error => {

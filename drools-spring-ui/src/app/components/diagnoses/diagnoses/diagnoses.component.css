@@ -1,0 +1,45 @@
+#diagnoses{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+.table{
+	white-space: nowrap;
+}
+
+#tr{
+  cursor: pointer;
+}
+
+.row{
+  display: table-row;
+}
+
+
+#tableSym {
+	width: 1000px;
+}
+
+#tableMed, #tableMed1 {
+	width: 500px;
+}
+
+#divSym{
+  overflow:auto;
+  height: 420px;
+  width: 1000px;
+}
+
+#divMed, #divMed1{
+  overflow:auto;
+  height: 300px;
+  width: 700px;
+}
+
+#errorModal, #medModal {
+	width: 700px;
+	left:15%;
+	top: 5%;
+}
+

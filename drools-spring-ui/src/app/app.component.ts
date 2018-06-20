@@ -19,6 +19,13 @@ export class AppComponent {
     return this.loginService.isSignedIn();
   }
 
+  isAdminSignedIn(): boolean {
+    if (this.loginService.isSignedIn() && this.loginService.getRole() === 'ADMIN') {
+      return true;
+    }
+    return false;
+  }
+  
   signOut(): void {
     localStorage.removeItem('currentUser');
     this.router.navigateByUrl('/login');

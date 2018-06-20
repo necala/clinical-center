@@ -1,0 +1,63 @@
+<div id="doctors">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Username</td>
+		      <td>Name</td>
+		      <td>Email</td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let d of doctors">
+			
+				<td>
+			   		{{d.username}}
+			    </td>
+			    <td>
+			    	{{d.firstName}} {{d.lastName}}
+			    </td>
+			    <td>
+			    	{{d.email}}
+			    </td>
+			    <td>
+			    	<button class="btn btn-success" (click)="update(d.id)">Update</button>
+			    </td>
+			    <td>
+			    	<button class="btn btn-danger" (click)="deleteDoctor(d.id)">Delete</button>
+			    </td>
+			    </tr>
+		    </tbody>
+		</table>
+	</div>
+	<br/><br/>
+
+	<button class="btn btn-success" data-dismiss="modal" (click)="register()">Add Doctor</button>
+	
+	<div [ngStyle]="{'display':displayError}" class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalErrorClose()">&times;</button></span>
+       
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">{{errorMsg}}</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalErrorClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+</div>

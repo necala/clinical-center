@@ -4,7 +4,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
+@Entity
 public class Illness implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -13,11 +21,13 @@ public class Illness implements Serializable {
         FIRST, SECOND, THIRD
     };
     
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 	private String name;
 	private Category category;
-	private List<Symptom> symptoms;
-	private Patient patient;
+	@OneToMany(mappedBy="illness", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private List<Symptom> symptoms = new ArrayList<Symptom>();
 	
 	public Illness() {
 		this.symptoms = new ArrayList<Symptom>();
@@ -57,12 +67,4 @@ public class Illness implements Serializable {
 		this.symptoms = symptoms;
 	}
 
-	public Patient getPatient() {
-		return patient;
-	}
-
-	public void setPatient(Patient patient) {
-		this.patient = patient;
-	}
-	
 }

@@ -27,6 +27,7 @@ public class MedicamentService {
 	@Autowired
 	MedicamentRepository medicamentRepository;
 	
+	
 	private static Logger log = LoggerFactory.getLogger(MedicamentService.class);
 	
 	
@@ -37,37 +38,7 @@ public class MedicamentService {
         this.kieContainer = kieContainer;
 	}    
     
-   
-
-	public void addMedicamentAllergy(Medicament medicament, String patientId) {
-		
-		Patient patient = new Patient();
-		patient.setPatientId(patientId);
-		patient.setAllergicMedicament(medicament);
-		
-		System.out.println("Pacijent: " + patientId + " sa alergijom na lijek: " + medicament.getName() + " u grupi: "
-				+ medicament.getCategory());
-		
-		KieSession kieSession = kieContainer.newKieSession();
-		
-		kieSession.insert(patient);
-		
-		
-	}
-	
-	public void addIngridientAllergy(Ingridient ingridient, String patientId) {
-		
-		Patient patient = new Patient();
-		patient.setPatientId(patientId);
-		patient.setAllergicIngridient(ingridient);
-		
-		System.out.println("Pacijent: " + patientId + " sa alergijom na sastojak: " + ingridient.getName() );
-		
-		KieSession kieSession = kieContainer.newKieSession();
-		
-		kieSession.insert(patient);
-		
-	}
+  
     
     public Medicament save(Medicament medicament){
     	return medicamentRepository.save(medicament);

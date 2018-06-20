@@ -1,5 +1,7 @@
 package drools.spring.example.service;
 
+import java.util.ArrayList;
+
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
@@ -42,7 +44,7 @@ public class UserService {
     }
     
     
-    public User register(User user){
+    public User save(User user){
     	return userRepository.save(user);
     }
     
@@ -50,5 +52,15 @@ public class UserService {
     	return userRepository.findByUsername(username);
     }
     
+    public User getById(Long id){
+    	return userRepository.findById(id);
+    }
+    
+    public void delete(User user){
+    	userRepository.delete(user);
+    }
 
+    public ArrayList<User> findAllDoctors(){
+    	return userRepository.findByCategory(User.Category.DOCTOR);
+    }
 }

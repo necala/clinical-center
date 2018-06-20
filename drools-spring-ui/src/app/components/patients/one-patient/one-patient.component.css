@@ -1,0 +1,30 @@
+#patient{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+#tr{
+  cursor: pointer;
+}
+
+.row{
+  display: table-row;
+}
+
+#ingrModal, #medModal, #errorModal {
+	width: 700px;
+	left:15%;
+	top: 5%;
+}
+
+#tableMed, #tableIngr{
+	width: 400px;
+}
+
+#divMed, #divIngr{
+  overflow:auto;
+  height: 300px;
+  width: 500px;
+}
+

@@ -15,14 +15,21 @@ import org.springframework.stereotype.Service;
 
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.Ingridient;
-import drools.spring.example.model.Patient;
+import drools.spring.example.model.IngridientAllergy;
+import drools.spring.example.model.Diagnose;
+import drools.spring.example.model.DiagnoseMedicament;
+import drools.spring.example.model.DiagnoseSymptom;
 import drools.spring.example.model.Record;
 import drools.spring.example.model.Symptom;
+import drools.spring.example.model.User;
 import drools.spring.example.model.Medicament;
+import drools.spring.example.model.MedicamentAllergy;
+import drools.spring.example.model.Patient;
 import drools.spring.example.model.events.ColdOrFeverEvent;
 import drools.spring.example.model.events.HighPressureEvent;
 import drools.spring.example.model.events.IllnessWithHighTempEvent;
 import drools.spring.example.model.events.PatientUsesAntibioticsEvent;
+import drools.spring.example.repository.IllnessRepository;
 
 @Service
 public class IllnessService {
@@ -41,25 +48,47 @@ public class IllnessService {
     MedicamentService medicamentService;
     
     @Autowired
+    MedicamentAllergyService medicamentAllergyService;
+    
+    @Autowired
+    IngridientAllergyService ingridientAllergyService;
+    
+    @Autowired
     IngridientService ingridientService;
     
-    public ArrayList<Illness> getIllnesses(Illness illness1) {
+    @Autowired
+    DiagnoseService diagnoseService;
+    
+    @Autowired
+    UserService userService;
+    
+    @Autowired
+    PatientService patientService;
+    
+    @Autowired
+    IllnessRepository illnessRepository;
+    
+    @Autowired
+    DiagnoseSymptomService diagnoseSymptomService;
+    
+    @Autowired
+    DiagnoseMedicamentService diagnoseMedicamentService;
+    
+    public ArrayList<Illness> getIllnesses(Illness illness1, Long patientId) {
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) illness1.getSymptoms();
     	symptoms = handleSymptoms(symptoms);
     	ArrayList<Illness> illness = new ArrayList<Illness>();
         KieSession kieSession = kieContainer.newKieSession();
         kieSession.setGlobal("illnesses", illness);
-        kieSession.setGlobal("pId", illness1.getPatient().getPatientId());
+        kieSession.setGlobal("pId", patientId);
         
         
         for (Symptom s: symptoms){
-        	if (s.getTerm().equals(Symptom.Term.HIGH_PRESSURE)){
-        		HighPressureEvent hp = new HighPressureEvent();
-        		hp.setPatientId(illness1.getPatient().getPatientId());
-        		kieSession.insert(hp);
-        	}
+        	
         	kieSession.insert(s);
         }
+        
+        insertDiagnosesInSession(kieSession, patientId);
         
         
         kieSession.getAgenda().getAgendaGroup("all-illnesses").setFocus();
@@ -74,32 +103,30 @@ public class IllnessService {
         
         illness = (ArrayList<Illness>) kieSession.getGlobal("illnesses");
         
+        
         Collections.sort(illness, symptomsSizeComparator);
 
         kieSession.dispose();
         return illness;
     }
     
-    public Illness getOneIllness(Illness illness1) {
+    public ArrayList<Illness> getOneIllness(Illness illness1, Long patientId) {
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) illness1.getSymptoms();
     	symptoms = handleSymptoms(symptoms);
     	ArrayList<Illness> illnesses = new ArrayList<Illness>();
     	ArrayList<Illness> allSymptomIllnesses = new ArrayList<Illness>();
-        //KieSession kieSession = kieContainer.newKieSession();
         
     	KieSession kieSession = kieContainer.newKieSession();
     	kieSession.setGlobal("illnesses", illnesses);
         kieSession.setGlobal("allSymptomIllnesses", allSymptomIllnesses);
-        kieSession.setGlobal("pId", illness1.getPatient().getPatientId());
+        kieSession.setGlobal("pId", patientId);
         
         for (Symptom s: symptoms){
-        	if (s.getTerm().equals(Symptom.Term.HIGH_PRESSURE)){
-        		HighPressureEvent hp = new HighPressureEvent();
-        		hp.setPatientId(illness1.getPatient().getPatientId());
-        		kieSession.insert(hp);
-        	}
+        	
         	kieSession.insert(s);
         }
+        
+        insertDiagnosesInSession(kieSession, patientId);
         
         kieSession.getAgenda().getAgendaGroup("one-illness").setFocus();
         
@@ -117,16 +144,39 @@ public class IllnessService {
         kieSession.fireAllRules();
         
         allSymptomIllnesses = (ArrayList<Illness>) kieSession.getGlobal("allSymptomIllnesses");
+        
+        ArrayList<Illness> return_illnesses = new ArrayList<>();
        
         if (!allSymptomIllnesses.isEmpty()){
+        	
         	if (allSymptomIllnesses.size()==1){
         		if (allSymptomIllnesses.get(0).getName().equals("Chronic Kidney Disease") || 
         				allSymptomIllnesses.get(0).getName().equals("Acute Kidney Injury")){
         			if (allSymptomIllnesses.get(0).getSymptoms().size() > 2){
-        				return allSymptomIllnesses.get(0);
+        				
+        				ArrayList<Symptom> newSymptoms = new ArrayList<>();
+        				
+        				for (Symptom s: allSymptomIllnesses.get(0).getSymptoms()){
+        					boolean flag = true;
+        					if (!newSymptoms.isEmpty()){
+        						for (Symptom s1: newSymptoms){
+        							
+        							if (s1.getTerm().equals(s.getTerm()) ){
+        								flag = false;
+        								break;
+        							}
+        						}
+        					}
+    						if (flag){
+								newSymptoms.add(s);
+							}
+        				}
+        				allSymptomIllnesses.get(0).setSymptoms(newSymptoms);
+        				
+        				return_illnesses.add(allSymptomIllnesses.get(0));
         			}
         		}else{
-        			return allSymptomIllnesses.get(0);
+        			return_illnesses.add(allSymptomIllnesses.get(0));
         		}
         		
         	}else{
@@ -134,114 +184,124 @@ public class IllnessService {
         		if (allSymptomIllnesses.get(0).getName().equals("Chronic Kidney Disease") || 
         				allSymptomIllnesses.get(0).getName().equals("Acute Kidney Injury")){
         			if (allSymptomIllnesses.get(0).getSymptoms().size() > 2){
-        				return allSymptomIllnesses.get(0);
+        				return_illnesses.add(allSymptomIllnesses.get(0));
         			}
         		}else{
-        			return allSymptomIllnesses.get(0);
+        			for (Illness i: allSymptomIllnesses){
+        				boolean flag = true;
+        				if (!return_illnesses.isEmpty()){
+        					for(Illness i2: return_illnesses){
+        						if (i2.getClass().equals(i.getCategory())){
+        							flag = false;
+        							break;
+        						}
+        					}
+        				}
+        				if (flag){
+        					return_illnesses.add(i);
+        				}
+        			}
         		}
-        		
             }
         }
         
         
         illnesses = (ArrayList<Illness>) kieSession.getGlobal("illnesses");
         kieSession.dispose();
+        
         if (!illnesses.isEmpty()){
         	Collections.sort(illnesses, symptomsSizeComparator);
 
-            return illnesses.get(0);
+        	if (illnesses.get(0).getCategory().equals(Illness.Category.FIRST)){
+        		boolean flag = true;
+        		for (Illness i: return_illnesses){
+        			if (i.getCategory().equals(Illness.Category.FIRST)){
+        				flag = false;
+        				break;
+        			}
+        		}
+        		if (flag){
+        			return_illnesses.add(illnesses.get(0));
+        		}
+        	}
         }
         
-        return null;
+        return return_illnesses;
     }
     
-    public String diagnose(Record record){
+    public void insertDiagnosesInSession(KieSession kieSession, Long patientId){
+    	ArrayList<Diagnose> diagnoses = diagnoseService.findByPatientId(patientId);
+        
+        if (!diagnoses.isEmpty()){
+        	for (Diagnose d: diagnoses){
+        		kieSession.insert(d);
+        		System.out.println("Ubacujem u sesiju dijagnozu: " + d.getIllnessName());
+        		ArrayList<DiagnoseMedicament> diagnoseMedicaments = diagnoseMedicamentService.findByDiagnoseId(d.getId());
+        		if (!diagnoseMedicaments.isEmpty()){
+        			for (DiagnoseMedicament dm: diagnoseMedicaments){
+        				if (dm.getMedicamentCategory() != null && dm.getMedicamentCategory().equals("ANTIBIOTICS")){
+        					kieSession.insert(dm);
+        					System.out.println("Ubacujem u sesiju dijagnozu lijek: " + dm.getMedicamentName());
+        				}
+        			}
+        		}
+        		
+        		ArrayList<DiagnoseSymptom> diagnoseSymptoms = diagnoseSymptomService.findByDiagnoseId(d.getId());
+        		if (!diagnoseSymptoms.isEmpty()){
+        			for (DiagnoseSymptom ds: diagnoseSymptoms){
+        				if (ds.getSymptomTerm().equals("TEMP_OVER_38") || ds.getSymptomTerm().equals("TEMP_BETWEEN_40_AND_41") ||
+        						ds.getSymptomTerm().equals("HIGH_PRESSURE")){
+        					kieSession.insert(ds);
+        					System.out.println("Ubacujem u sesiju dijagnozu simptom: " + ds.getSymptomTerm());
+        				}
+        			}
+        		}
+        	}
+        }
+    }
+    
+   
+    
+    public String setDiagnose(Record record){
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) record.getIllness().getSymptoms();
     	symptoms = handleSymptoms(symptoms);
     	record.getIllness().setSymptoms(symptoms);
     	record.setDate(new Date());
+    	
+    	
+    	
+    	String allergies = "Patient allergic to: ";
+    	
     	KieSession kieSession = kieContainer.newKieSession();
-        kieSession.insert(record);
-        kieSession.insert(record.getIllness());
+
+
+        kieSession.setGlobal("idPatient", record.getPatient().getId());
         
-        Patient patient = new Patient();
-        patient.setPatientId(record.getPatient().getPatientId());
-        patient.setAllergicMedicament(medicamentService.getOne(4L));
-        
-        kieSession.insert(patient);
-        
-        kieSession.setGlobal("pId", record.getPatient().getPatientId());
-        
-        
-        
-        if (record.getIllness().getName().equals("Cold")){
-        	ColdOrFeverEvent cf = new ColdOrFeverEvent();
-        	cf.setIllnessName("Cold");
-        	cf.setPatientId(record.getPatient().getPatientId());
-        	kieSession.insert(cf);
-        }
-        
-        if (record.getIllness().getName().equals("Fever")){
-        	ColdOrFeverEvent cf = new ColdOrFeverEvent();
-        	cf.setIllnessName("Fever");
-        	cf.setPatientId(record.getPatient().getPatientId());
-        	kieSession.insert(cf);
-        	
-        	IllnessWithHighTempEvent il = new IllnessWithHighTempEvent();
-        	il.setIllnessName("Fever");
-        	il.setPatientId(record.getPatient().getPatientId());
-        	
-        	kieSession.insert(il);
-        }
-        
-        if (record.getIllness().getName().equals("Sinus Infection")){
-        	IllnessWithHighTempEvent il = new IllnessWithHighTempEvent();
-        	il.setIllnessName("Sinus Infection");
-        	il.setPatientId(record.getPatient().getPatientId());
-        	kieSession.insert(il);
-        }
-        
-        if (record.getIllness().getName().equals("Tonsil Inflamation")){
-        	IllnessWithHighTempEvent il = new IllnessWithHighTempEvent();
-        	il.setIllnessName("Tonsil Inflamation");
-        	il.setPatientId(record.getPatient().getPatientId());
-        	kieSession.insert(il);
-        }
-        
-        ArrayList<Medicament> medicaments = new ArrayList<>();
-        
-        boolean flag = true;
         if (!record.getMedicaments().isEmpty()){
         	for (Medicament m: record.getMedicaments()){
-        	
-        		if (!medicaments.isEmpty()){
-	        		for (Medicament m1: medicaments){
-	        			if (m1.getName().equals(m.getName())){
-	        				flag = false;
-	        				break;
-	        			}
-	        		}
+        		kieSession.insert(m);
+        		if (!m.getIngridients().isEmpty()){
+        			for(Ingridient i: m.getIngridients()){
+                		kieSession.insert(i);
+        			}
         		}
-    			if (flag){
-    				medicaments.add(m);
-    			}
+        	}
+        }
+
+        List<MedicamentAllergy> medAll = medicamentAllergyService.findByPatientId(record.getPatient().getId());
+        
+        if (!medAll.isEmpty()){
+        	for (MedicamentAllergy ma: medAll){System.out.println("U sesiju ubacujem alergiju lijek " + ma.getMedicamentName() + " a pacijent: " + ma.getPatientId());
+        		kieSession.insert(ma);
         	}
         }
         
-        for (Medicament m: medicaments){
-        	if (m.getCategory().equals(Medicament.Category.ANTIBIOTICS)){
-        		PatientUsesAntibioticsEvent pantb = new PatientUsesAntibioticsEvent();
-        		pantb.setIllnessName(record.getIllness().getName());
-        		pantb.setPatientId(record.getPatient().getPatientId());
-        		kieSession.insert(pantb);
+        List<IngridientAllergy> ingrAll = ingridientAllergyService.findByPatient(record.getPatient().getId());
+        
+        if (!ingrAll.isEmpty()){
+        	for (IngridientAllergy ia: ingrAll){System.out.println("U sesiju ubacujem alergiju na sastojak " + ia.getIngridientName() + " a pacijent: " + ia.getPatientId());
+        		kieSession.insert(ia);
         	}
-        	kieSession.insert(m);
-        	if (!m.getIngridients().isEmpty()){
-        		for (Ingridient i1: m.getIngridients()){
-            		kieSession.insert(i1);
-            	}
-        	}
-        	
         }
         
         
@@ -267,7 +327,6 @@ public class IllnessService {
         allergicIngridients = (ArrayList<Ingridient>) kieSession.getGlobal("allergicsIngr");
         
         
-        String allergies = "Patient allergic to: ";
         
         if (!allergicMedicaments.isEmpty()){
         	for (Medicament m1: allergicMedicaments){
@@ -282,9 +341,47 @@ public class IllnessService {
         if (!allergies.equals("Patient allergic to: ")){
         	allergies = allergies.substring(0, allergies.length()-2);
         	allergies+="!";
+        }else{
+        	Diagnose diagnose = new Diagnose();
+        	diagnose.setDate(new Date());
+        	diagnose.setIllnessName(record.getIllness().getName());
+        	diagnose.setPatientId(record.getPatient().getId());
+        	User doctor = userService.getById(record.getDoctor().getId());
+        	diagnose.setDoctorId(record.getDoctor().getId());
+        	diagnose.setDoctorName(doctor.getFirstName() + " " + doctor.getLastName());
+        	Patient patient = patientService.findOne(record.getPatient().getId());
+        	diagnose.setPatientName(patient.getFirstName() + " " + patient.getLastName());
+        	
+        	diagnose = diagnoseService.addDiagnose(diagnose);
+        	
+        	if (!symptoms.isEmpty()){
+        		for (Symptom s: symptoms){
+        			DiagnoseSymptom ds = new DiagnoseSymptom();
+            		ds.setDiagnoseId(diagnose.getId());
+            		ds.setSymptomTerm(s.getTerm().toString());
+            		ds = diagnoseSymptomService.addDiagnoseSymtpom(ds);
+        		}
+        		
+        	}
+        	
+        	if (!record.getMedicaments().isEmpty()){
+        		for (Medicament m: record.getMedicaments()){
+        			DiagnoseMedicament dm = new DiagnoseMedicament();
+        			dm.setDiagnoseId(diagnose.getId());
+        			dm.setMedicamentId(m.getId());
+        			dm.setMedicamentName(m.getName());
+        			dm.setMedicamentCategory(m.getCategory().toString());
+        			dm.setPatientId(record.getPatient().getId());
+        			dm.setDate(diagnose.getDate());
+        			dm.setDoctorId(diagnose.getDoctorId());
+        			dm.setIllnessName(diagnose.getIllnessName());
+        			dm = diagnoseMedicamentService.addDiagnoseMedicament(dm);
+        		}
+        	}
         }
         
-        kieSession.dispose();
+        
+    	
     	
         return allergies;
     }
@@ -334,6 +431,25 @@ public class IllnessService {
     	return newSymptoms;
     }
 
+    public Illness addIllness(Illness illness){
+    	return illnessRepository.save(illness);
+    }
+    
+    public void deleteIllness(Illness illness){
+    	illnessRepository.delete(illness);
+    }
+    
+    public Illness findById(Long id){
+    	return illnessRepository.findById(id);
+    }
+    
+    public Illness findByName(String name){
+    	return illnessRepository.findByName(name);
+    }
+    
+    public ArrayList<Illness> findAll(){
+    	return illnessRepository.findAll();
+    }
     
     Comparator<Illness> symptomsSizeComparator = new Comparator<Illness>()
     {

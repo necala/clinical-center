@@ -1,0 +1,74 @@
+<div id="illnesses">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td>Category</td>
+		      <td></td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let i of illnesses">
+			
+				<td title="Click to see symptoms!" (click)="gotoSymptoms(i.id)">
+			   		{{i.name}}
+			    </td>
+			    <td title="Click to see symptoms!" (click)="gotoSymptoms(i.id)">
+			   		{{i.category}}
+			    </td>
+			    <td>
+			    	<button class="btn btn-success"  (click)="update(i.id)">Update</button>
+			    </td>
+			    <td>
+			    	<button class="btn btn-danger"  (click)="deleteIllness(p.id)">Delete Illness</button>
+			    </td>
+			</tr>
+		    </tbody>
+		</table>
+	</div>
+	<div *ngIf="role == 'ADMIN'">
+		<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Illness</button>
+	</div>
+	
+	
+	<div [ngStyle]="{'display':display}" class="modal" id="symModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+          <div class="row" >
+			<div id="nameValue">
+				<label for="fieldName" class="form-control-label">Name:</label>
+			    <input type="text" [(ngModel)]="illness.name" placeholder="Name"
+			               class="form-control" id="fieldName" name="fieldName1" >
+		       
+			</div>
+			<div id="category">
+				<label for="field1c" class="form-control-label">Category</label>
+				<select [(ngModel)]="illness.category"
+			                    class="form-control" id="field1c" name="field1">
+			              <option value="FIRST">FIRST</option>
+			              <option value="SECOND">SECOND</option>
+			              <option value="THIRD">THIRD</option>
+				</select>
+			</div>
+        </div>
+        
+
+        <div class="modal-footer">
+        	<button class="btn btn-success" data-dismiss="modal" (click)="saveIllness()">Save</button>
+	        <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+ 	 </div>
+	</div>
+
+	
+</div>

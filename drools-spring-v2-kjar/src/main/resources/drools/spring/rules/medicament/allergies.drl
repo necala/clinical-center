@@ -2,14 +2,16 @@ package drools.spring.rules;
 
 import drools.spring.example.model.Record;
 import drools.spring.example.model.Medicament;
+import drools.spring.example.model.MedicamentAllergy;
 import drools.spring.example.model.Ingridient;
+import drools.spring.example.model.IngridientAllergy;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.User;
 import drools.spring.example.model.Patient;
 import java.util.List;
 import java.util.ArrayList;
 
-global String pId;
+global Long idPatient;
 global ArrayList<Medicament> allergics;
 global ArrayList<Ingridient> allergicsIngr;
 
@@ -17,8 +19,9 @@ rule "Check if patient is allergic to medicament"
 	agenda-group "check-med-allergies"
     when
         $medicament: Medicament( $medName: name )
-    	$p: Patient(patientId == pId && allergicMedicament.name == $medName)
+    	$allergy: MedicamentAllergy( patientId == idPatient && medicamentName == $medName )
     then    	
+    	System.out.print("CAOS NASLA SAM ALERGIJU NA LIJEK");
     	allergics.add($medicament);
 end
 
@@ -26,8 +29,9 @@ rule "Check if patient is allergic to ingridient"
 	agenda-group "check-ingr-allergies"
     when
         $ingridient: Ingridient( $ingrName: name )
-    	$p: Patient(patientId == pId && allergicIngridient.name == $ingrName)
-    then    	
+    	$allergy: IngridientAllergy( patientId == idPatient && ingridientName == $ingrName )
+    then   
+    	System.out.print("CAOS NASLA SAM ALERGIJU NA SASTOJAK"); 	
     	allergicsIngr.add($ingridient);
 end
 

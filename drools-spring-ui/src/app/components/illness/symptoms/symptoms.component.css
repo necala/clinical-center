@@ -1,0 +1,26 @@
+#symptoms{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+.row{
+  display: table-row;
+}
+
+#symModal, #errorModal {
+	width: 800px;
+	left:15%;
+	top: 5%;
+}
+
+#term, #tempValue{
+	display:inline-block;
+}
+
+#divSym{
+  overflow:auto;
+  height: 400px;
+  width: 800px;
+}
+

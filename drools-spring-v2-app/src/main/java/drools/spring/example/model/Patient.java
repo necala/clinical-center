@@ -4,42 +4,43 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
-/**
- * @author Nevena Lazarevic
- *
- */
+@Entity
 public class Patient implements Serializable {
-
+	
 	private static final long serialVersionUID = 1L;
 	
+	@Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
-	private String firstName;
-	private String lastName;
-	private String patientId;
-	private Ingridient allergicIngridient = new Ingridient();
-	private Medicament allergicMedicament = new Medicament();
-	
+    private String firstName;
+    private String lastName;
+    private String patientId;
+    
 	public Patient() {
 		super();
 	}
 
-	public Patient(String firstName, String lastName,
-			Ingridient allergicIngridient, Medicament allergicMedicamnt) {
+	public Patient(String firstName, String lastName, String patientId) {
 		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.allergicIngridient = allergicIngridient;
-		this.allergicMedicament = allergicMedicamnt;
+		this.patientId = patientId;
 	}
 
 	public Long getId() {
 		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getFirstName() {
@@ -58,7 +59,6 @@ public class Patient implements Serializable {
 		this.lastName = lastName;
 	}
 
-	
 	public String getPatientId() {
 		return patientId;
 	}
@@ -67,22 +67,6 @@ public class Patient implements Serializable {
 		this.patientId = patientId;
 	}
 
-	public Ingridient getAllergicIngridient() {
-		return allergicIngridient;
-	}
 
-	public void setAllergicIngridient(Ingridient allergicIngridient) {
-		this.allergicIngridient = allergicIngridient;
-	}
-
-	public Medicament getAllergicMedicament() {
-		return allergicMedicament;
-	}
-
-	public void setAllergicMedicament(Medicament allergicMedicament) {
-		this.allergicMedicament = allergicMedicament;
-	}
-
-	
 	
 }

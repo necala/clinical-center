@@ -16,6 +16,7 @@ public class Record implements Serializable {
 	private Date date;
 	
 	private Patient patient;
+	private User doctor;
 	private List<Medicament> medicaments = new ArrayList<>();
 	
 	public Record() {
@@ -64,5 +65,19 @@ public class Record implements Serializable {
 	public void setMedicaments(List<Medicament> medicaments) {
 		this.medicaments = medicaments;
 	}
+
+	public User getDoctor() {
+		return doctor;
+	}
+
+	public void setDoctor(User doctor) {
+		this.doctor = doctor;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+	
+	
 	
 }

@@ -1,0 +1,30 @@
+#doctors{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+#tr{
+  cursor: pointer;
+}
+
+.row{
+  display: table-row;
+}
+
+#errorModal {
+	width: 700px;
+	left:15%;
+	top: 5%;
+}
+
+#tableSym {
+	width: 900px;
+}
+
+#divSym{
+  overflow:auto;
+  height: 400px;
+  width: 900px;
+}
+

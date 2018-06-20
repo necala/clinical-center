@@ -23,22 +23,19 @@ public class User implements Serializable {
     private String password;
     private String email;
     private String username;
-    private Boolean loggedIn;
     private Category category;
     
 	public User() {
-		this.loggedIn= false;
 	}
 
 	public User(String firstName, String lastName, 
-			String password, String email, String username, Boolean logged,
+			String password, String email, String username,
 			Category category) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.password = password;
 		this.email = email;
 		this.username = username;
-		this.loggedIn = logged;
 		this.category = category;
 	}
 
@@ -94,12 +91,5 @@ public class User implements Serializable {
 		this.category = category;
 	}
 
-	public Boolean isLoggedIn() {
-		return loggedIn;
-	}
-
-	public void setLoggedIn(Boolean loggedIn) {
-		this.loggedIn = loggedIn;
-	}
 	
 }

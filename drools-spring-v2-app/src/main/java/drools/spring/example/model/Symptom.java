@@ -2,7 +2,13 @@ package drools.spring.example.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
+@Entity
 public class Symptom implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -28,21 +34,25 @@ public class Symptom implements Serializable {
 		
     };
     
-    
+    @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     private Term term;
     
-    private Double temperature;
+    private Double temp;
     private String helper;
-    private Boolean specific;
-    
+    private Boolean specifics;
+
+	@ManyToOne
+	private Illness illness;
     
     
 	public Symptom() {
-		this.specific = false;
+		super();
 	}
 
 	public Symptom(Term term) {
+		super();
 		this.term = term;
 	}
 	
@@ -60,11 +70,11 @@ public class Symptom implements Serializable {
 	}
 
 	public Double getTemperature() {
-		return temperature;
+		return temp;
 	}
 
 	public void setTemperature(Double temperature) {
-		this.temperature = temperature;
+		this.temp = temperature;
 	}
 
 	public String getHelper() {
@@ -76,11 +86,19 @@ public class Symptom implements Serializable {
 	}
 
 	public Boolean getSpecific() {
-		return specific;
+		return specifics;
 	}
 
 	public void setSpecific(Boolean specific) {
-		this.specific = specific;
+		this.specifics = specific;
+	}
+
+	public Illness getIllness() {
+		return illness;
+	}
+
+	public void setIllness(Illness illness) {
+		this.illness = illness;
 	}
     
 	

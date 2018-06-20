@@ -1,0 +1,27 @@
+#patients{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+#tr{
+  cursor: pointer;
+}
+
+.row{
+  display: table-row;
+}
+
+
+#symModal {
+	width: 700px;
+	left:15%;
+	top: 5%;
+}
+
+#divSym{
+  overflow:auto;
+  height: 400px;
+  width: 500px;
+}
+

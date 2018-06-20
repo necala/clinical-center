@@ -1,0 +1,139 @@
+<div id="patient">
+
+	<div class="row">
+    	<div id="fName">
+    		<label for="fName" class="form-control-label">First Name:</label>
+			<input type="text" [(ngModel)]="patient.firstName" placeholder="First Name"
+		            class="form-control" id="fName" name="fName1">
+		</div>
+	</div>
+      
+    <div class="row">
+    	<div id="fLName">
+			<label for="fLName" class="form-control-label">Last Name:</label>
+			<input type="text" [(ngModel)]="patient.lastName" placeholder="Last Name"
+					class="form-control" id="fLName" name="fLName1">
+		</div>
+	</div>
+        
+    <div class="row">
+    	<div id="fId">
+			<label for="fId" class="form-control-label">Patient ID:</label>
+			<input type="text" [(ngModel)]="patient.patientId" disabled="disabled"
+			        class="form-control" id="fId" name="fId1">
+		</div>
+	</div>
+	<br/>
+	<button class="btn btn-danger" (click)="back()">Back</button>
+	<button class="btn btn-success" (click)="update()">Change Info</button>
+	<br/> <br/>
+	<button class="btn btn-primary" (click)="showIngridients()">Ingridient Allergies</button>
+	<button class="btn btn-primary" (click)="showMedicaments()">Medicament Allergies</button>
+	
+	
+	<div [ngStyle]="{'display':displayIngridients}" class="modal" id="ingrModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalIngridientsClose()">&times;</button></span>
+          <h3>Ingridients Allergies</h3>
+        </div>
+        <div class="modal-body">
+          
+          <div id="divIngr">
+          	<table id="tableIngr" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let ia of ingridientAllergies">
+			
+				<td>
+			   		{{ia.ingridientName}}
+			    </td>
+			    <td>
+			    	<button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="deleteIngridientAllergy(ia.id)">Remove Allergy</button>
+			    </td>
+			    </tr>
+		    </tbody>
+		  </table>
+        </div>
+        </div>
+
+        <div class="modal-footer">
+          
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalIngridientsClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div [ngStyle]="{'display':displayMedicaments}" class="modal" id="medModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalMedicamentsClose()">&times;</button></span>
+          <h3>Medicament Allergies</h3>
+        </div>
+        <div class="modal-body">
+          
+          <div id="divMed">
+          	<table id="tableMed" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>Name</td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let ma of medicamentAllergies">
+			
+				<td>
+			   		{{ma.medicamentName}}
+			    </td>
+			    <td>
+			    	<button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="deleteMedicamentAllergy(ma.id)">Remove Allergy</button>
+			    </td>
+			    </tr>
+		    </tbody>
+		  </table>
+        </div>
+        </div>
+
+        <div class="modal-footer">
+          
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalMedicamentsClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div [ngStyle]="{'display':displayError}" class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalErrorClose()">&times;</button></span>
+       
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">{{errorMsg}}</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalErrorClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+  
+</div>

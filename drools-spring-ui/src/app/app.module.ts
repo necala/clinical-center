@@ -14,6 +14,16 @@ import { MedicamentsComponent } from './components/medicament/medicaments/medica
 import { MedicamentService } from './service/medicament.service';
 import { IngridientsComponent } from './components/medicament/ingridients/ingridients.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { AddPatientsComponent } from './components/patients/add-patients/add-patients.component';
+import { PatientService } from './service/patient.service';
+import { OnePatientComponent } from './components/patients/one-patient/one-patient.component';
+import { DiagnosesComponent } from './components/diagnoses/diagnoses/diagnoses.component';
+import { DiagnoseService } from './service/diagnose.service';
+import { SymptomsComponent } from './components/illness/symptoms/symptoms.component';
+import { IllnessesComponent } from './components/illness/illnesses/illnesses.component';
+import { ReportComponent } from './components/report/report/report.component';
+import { ReportService } from './service/report.service';
+import { DoctorsComponent } from './components/doctors/doctors/doctors.component';
 
 
 @NgModule({
@@ -23,7 +33,14 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     RegisterComponent,
     DiagnoseIllnessComponent,
     MedicamentsComponent,
-    IngridientsComponent
+    IngridientsComponent,
+    AddPatientsComponent,
+    OnePatientComponent,
+    DiagnosesComponent,
+    SymptomsComponent,
+    IllnessesComponent,
+    ReportComponent,
+    DoctorsComponent
   ],
   imports: [
     BrowserModule,
@@ -36,7 +53,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
     LoginService,
     UserService,
     IllnessService,
-    MedicamentService
+    MedicamentService,
+    PatientService,
+    DiagnoseService,
+    ReportService
   ],
   bootstrap: [AppComponent]
 })

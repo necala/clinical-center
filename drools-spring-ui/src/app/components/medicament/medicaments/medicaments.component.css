@@ -16,15 +16,19 @@
 	display:inline-block;
 }
 
-#symModal {
+#symModal, #errorModal {
 	width: 700px;
 	left:15%;
 	top: 5%;
 }
 
+#tableSym {
+	width: 900px;
+}
+
 #divSym{
   overflow:auto;
   height: 400px;
-  width: 500px;
+  width: 900px;
 }
 

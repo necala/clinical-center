@@ -1,0 +1,143 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Diagnose;
+import drools.spring.example.model.DiagnoseMedicament;
+import drools.spring.example.model.User;
+import drools.spring.example.model.Patient;
+import drools.spring.example.model.Report;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Calendar;
+
+global ArrayList<Report> reports;
+
+
+rule "Check if patient has chronic illness"
+	agenda-group "reports"
+    when
+        $diagnose: Diagnose( $in: illnessName && $pId: patientId &&  illnessName != "Cold" && illnessName != "Fever" )
+        
+        Number(intValue >= 5) from accumulate(
+        	$d1 : Diagnose( 
+        		this != $diagnose,
+        		illnessName == $in,
+        		patientId == $pId,
+        		date < new Date(),
+        		date > (removeMonths(-24))
+        	 ),
+        	 count($d1)
+        )
+ 
+        
+    then    	
+    	//System.out.print("");
+    	Report report = new Report();
+    	report.setCategory(Report.Category.CHRONIC_ILLNES);
+    	report.setHelper("Chronic illness: " + $in);
+    	Patient p = new Patient();
+    	p.setId($pId);
+    	report.setPatient(p);
+    	reports.add(report);
+end
+
+
+rule "Check if patient is addict"
+	agenda-group "reports"
+    when
+        $diagnose: Diagnose( $pId: patientId && $iId: id && $docId: doctorId)
+        $dm : DiagnoseMedicament( $patientId: patientId && diagnoseId == $iId && medicamentCategory == "ANALGESICS" && doctorId == $docId )
+        
+        $diagnose2: Diagnose( patientId == $pId && $i2Id: id && $i2Id != $iId && $doc2Id: doctorId && $doc2Id != $docId)
+        $dm2 : DiagnoseMedicament( diagnoseId == $i2Id && medicamentCategory == "ANALGESICS" && doctorId == $doc2Id )
+        
+        $resList: List(size >= 5) from accumulate(
+            $d1: DiagnoseMedicament(
+                this != $dm,
+                patientId == $patientId,
+                medicamentCategory == "ANALGESICS",
+                date < new Date(),
+        		date > (removeMonths(-6))
+            ),
+            init(List<DiagnoseMedicament> list1 = new ArrayList<DiagnoseMedicament>();),
+            action(list1.add($d1);),
+            result(list1)
+        )
+        Number(intValue >= 1) from accumulate(
+        	$u: DiagnoseMedicament (
+        	    this != $dm,
+        	    this != $dm2,
+                doctorId != $docId && doctorId != $doc2Id
+            ) from $resList,
+            count($u)
+        )
+    then   	
+    	//System.out.print("");
+    	Report report = new Report();
+    	report.setCategory(Report.Category.ADDICT);
+    	report.setHelper("Probably an addict");
+    	Patient p = new Patient();
+    	p.setId($pId);
+    	report.setPatient(p);
+    	reports.add(report);
+end
+
+
+rule "Check if patient has weakened immunity"
+	agenda-group "reports"
+    when
+        $diagnose: Diagnose( $pId: patientId && $iId: id && $in: illnessName)
+        $dm : DiagnoseMedicament( $patientId: patientId && diagnoseId == $iId && medicamentCategory == "ANTIBIOTICS" && illnessName == $in )
+        
+        $resList: List(size >= 10) from accumulate(
+            $d1: DiagnoseMedicament(
+                this != $dm,
+                patientId == $patientId,
+                medicamentCategory == "ANTIBIOTICS",
+                illnessName != $in,
+                date < new Date(),
+        		date > (removeMonths(-12))
+            ),
+            init(List<DiagnoseMedicament> list1 = new ArrayList<DiagnoseMedicament>();),
+            action(list1.add($d1);),
+            result(list1)
+        )
+        
+        $list: List() from collect(Diagnose( patientId == $pId )) 
+        $listMed: List() from collect(DiagnoseMedicament( patientId == $pId ))
+        
+
+        
+        $resList2 : List(size >= 10) from accumulate(
+        	$med: DiagnoseMedicament( 
+        		medicamentCategory == "ANTIBIOTICS"
+        	 ) from $listMed,
+        	 init(List<DiagnoseMedicament> list2 = new ArrayList<DiagnoseMedicament>();),
+             action(list2.add($med);),
+             result(list2)
+        )
+        
+       
+    then   	
+    	System.out.println("");
+    	if ($resList2.size() >= $resList.size()){
+    		Report report = new Report();
+		   	report.setCategory(Report.Category.WEAKENED_IMMUNITY);
+		   	report.setHelper("Has weakened immunity");
+		   	Patient p = new Patient();
+		   	p.setId($pId);
+	    	report.setPatient(p);
+	    	reports.add(report);
+    	}
+    	
+end
+
+
+
+function Date removeMonths(Integer months){
+	Calendar newCal = Calendar.getInstance();
+	newCal.setTime(new Date());
+	newCal.add(Calendar.MONTH, months);
+	return newCal.getTime();
+}
+

@@ -37,6 +37,13 @@ export class MedicamentService {
       .toPromise()
       .then(res => res as Medicament);
   }
+  
+  public changeMedicament(medicament: Medicament): Promise<Medicament> {
+
+    return this.http.put('/api/medicaments', medicament)
+      .toPromise()
+      .then(res => res as Medicament);
+  }
 
   public addIngridients(id: number, ingridients: Ingridient[]): Promise<Ingridient[]> {
 
@@ -49,9 +56,18 @@ export class MedicamentService {
 
   public addOneIngridient(id: number, ingridient: Ingridient): Promise<Ingridient> {
 
-    const url = `/api/medicaments/${id}/ingridient`;
+    const url = `/api/medicaments/${id}/ingridients`;
 
     return this.http.post(url, ingridient)
+      .toPromise()
+      .then(res => res as Ingridient);
+  }
+  
+  public changeOneIngridient(id: number, ingridient: Ingridient): Promise<Ingridient> {
+
+    const url = `/api/medicaments/${id}/ingridients`;
+
+    return this.http.put(url, ingridient)
       .toPromise()
       .then(res => res as Ingridient);
   }
@@ -71,6 +87,15 @@ export class MedicamentService {
     return this.http.get(url)
       .toPromise()
       .then(res => res as Ingridient[]);
+  }
+  
+  public getOneIngridient(id: number, idI: number): Promise<Ingridient> {
+
+    const url = `/api/medicaments/${id}/ingridients/${idI}`;
+
+    return this.http.get(url)
+      .toPromise()
+      .then(res => res as Ingridient);
   }
 
   public deleteMedicament(id: number): Promise<{}> {

@@ -14,7 +14,7 @@ rule "All illnesses - Tonsil Inflamation"
     when
         $list: List() from collect(Symptom( ))
        
-        $resList: List() from accumulate(
+        $resList: List(size > 0) from accumulate(
             $sym: Symptom(
                 term == Symptom.Term.SORE_THROAT || term == Symptom.Term.PAIN_TO_EARS || term == Symptom.Term.HEADACHE
                 || term == Symptom.Term.TEMP_BETWEEN_40_AND_41 || term == Symptom.Term.SHIVER
@@ -26,13 +26,12 @@ rule "All illnesses - Tonsil Inflamation"
             result(list1)
         )
     then    	
-        if (!$resList.isEmpty()){
-	        Illness i = new Illness();
-	    	i.setCategory(Illness.Category.FIRST);
-	    	i.setName("Tonsil Inflammation");
-	    	i.setSymptoms($resList);
-	    	illnesses.add(i);
-        } 
+        Illness i = new Illness();
+	   	i.setCategory(Illness.Category.FIRST);
+	   	i.setName("Tonsil Inflammation");
+	   	i.setSymptoms($resList);
+	   	illnesses.add(i);
+        
 end
 
 rule "One illness - Tonsil Inflamation"
@@ -40,7 +39,7 @@ rule "One illness - Tonsil Inflamation"
     when
         $list: List() from collect(Symptom( ))
        
-        $resList: List() from accumulate(
+        $resList: List(size >= 4) from accumulate(
             $sym: Symptom(
                 term == Symptom.Term.SORE_THROAT || term == Symptom.Term.PAIN_TO_EARS || term == Symptom.Term.HEADACHE
                 || term == Symptom.Term.TEMP_BETWEEN_40_AND_41 || term == Symptom.Term.SHIVER
@@ -52,22 +51,16 @@ rule "One illness - Tonsil Inflamation"
             result(list1)
         )
     then 
+    	Illness illness = new Illness();
+	    illness.setCategory(Illness.Category.FIRST);
+	   	illness.setName("Tonsil Inflammation");
+	   	illness.setSymptoms($resList);
     	if ($resList.size() == 8){
-        	Illness illness = new Illness();
-	    	illness.setCategory(Illness.Category.FIRST);
-	    	illness.setName("Tonsil Inflammation");
-	    	System.out.println("ovdje je nova bolest: sa svim simptomima "+ illness.getName());
-	    	illness.setSymptoms($resList);
+        	System.out.println("ovdje je nova bolest: sa svim simptomima "+ illness.getName());
 	    	allSymptomIllnesses.add(illness);
         } else {
-        	if ($resList.size() >= 4){
-		        Illness i = new Illness();
-		    	i.setCategory(Illness.Category.FIRST);
-		    	i.setName("Tonsil Inflammation");
-		    	System.out.println("ovdje je nova bolest: "+ i.getName());
-		    	i.setSymptoms($resList);
-		    	illnesses.add(i);
-	        } 
+		   	System.out.println("ovdje je nova bolest: "+ i.getName());
+	    	illnesses.add(illness);
         }   	
 end
 

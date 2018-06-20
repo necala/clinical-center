@@ -3,7 +3,7 @@ import { LoginService } from '../../service/login.service';
 import { UserService } from '../../service/user.service';
 import { Component, OnInit } from '@angular/core';
 import {Location} from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -16,14 +16,40 @@ export class RegisterComponent implements OnInit {
 
   modalDisplay: string;
   repeatedPassword: string;
+  id: number;
+  update: boolean;
 
   constructor(private userService: UserService, private location: Location,
-              private loginService: LoginService, private router: Router) {
+              private loginService: LoginService, private router: Router,
+              private route: ActivatedRoute) {
     this.modalDisplay = 'none';
+    this.id = 0;
     this.model = new User();
+    this.update = false;
   }
 
   ngOnInit() {
+    if (this.route.snapshot.params['id']) {
+      this.id = +this.route.snapshot.params['id'];
+      this.update = true;
+      this.getDoctor();
+    }
+  }
+
+ getDoctor() {
+    this.userService.getDoctor(this.id).then(
+      res => {
+        this.model = res;
+      }
+    );
+  }
+
+  updateDoctor() {
+    this.userService.updateDoctor(this.model).then(
+      res => {
+        this.router.navigate(['../doctors']);
+      }
+    );
   }
 
   register() {
@@ -31,20 +57,7 @@ export class RegisterComponent implements OnInit {
       this.userService.register(this.model).then(
         response => {
           this.model = response;
-          this.loginService.login(response.username, response.password).then(
-            res => {
-              if (res) {
-                localStorage.setItem('currentUser', JSON.stringify({
-                  id: res.id,
-                  username: res.username,
-                  category: res.category
-                }));
-                if (res.category.toString() === Category[Category.DOCTOR]) {
-                  this.router.navigate(['../doctor-homepage']);
-                }
-              }
-            }
-           );
+          this.router.navigate(['../doctors']);
         }
       ).catch( error => {
         console.log(error);
@@ -71,7 +84,7 @@ export class RegisterComponent implements OnInit {
     return false;
   }
 
-  goBack(): void {
+  back(): void {
     this.location.back();
   }
 

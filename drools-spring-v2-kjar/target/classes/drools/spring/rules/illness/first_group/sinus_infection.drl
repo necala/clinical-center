@@ -5,13 +5,16 @@ import drools.spring.example.model.Illness;
 import drools.spring.example.model.User;
 import drools.spring.example.model.Patient;
 import drools.spring.example.model.Record;
+import drools.spring.example.model.Diagnose;
 import drools.spring.example.model.events.ColdOrFeverEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Calendar;
 
 global ArrayList<Illness> illnesses;
 global ArrayList<Illness> allSymptomIllnesses;
-global String pId;
+global Long pId;
 
 rule "All illnesses - Sinus Infection"
 	agenda-group "all-illnesses"
@@ -41,18 +44,29 @@ end
 rule "Specific request - all illnesses - Sinus Infection"
 	agenda-group "special-request-all-illnesses"
     when
-        $cf: ColdOrFeverEvent( illnessName == "Cold" || illnessName == "Fever" && patientId == pId )
+        $d1: Diagnose( illnessName == "Cold" || illnessName == "Fever" && patientId == pId && $d: date &&
+          new Date() < (add60Days($d)) )
     then    	
+    	boolean addSymptom = true;
         if (!illnesses.isEmpty()){
         	for (Object o: illnesses){
         		Illness i = (Illness) o;
         		if (i.getName().equals("Sinus Infection")){
-        			Symptom s = new Symptom();
-				    s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
-				   	s.setSpecific(true);
-				   	s.setHelper("Suffered from cold/fever in past 60 days");
-        			i.getSymptoms().add(s);
-        			break;
+        			for (Object o1: i.getSymptoms()){
+        				Symptom s1 = (Symptom) o1;
+        				if (s1.getTerm() == Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS){
+        					addSymptom = false;
+        					break;
+        				}
+        			}
+        			if (addSymptom){
+	        			Symptom s = new Symptom();
+					    s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+					   	s.setSpecific(true);
+					   	s.setHelper("Suffered from cold/fever in past 60 days");
+	        			i.getSymptoms().add(s);
+	        			break;
+        			}
         		}
         	}
         }else{
@@ -70,6 +84,7 @@ end
 
 rule "One illness - Sinus Infection"
 	agenda-group "one-illness"
+	no-loop
     when
         $list: List() from collect(Symptom( ))
        
@@ -92,7 +107,7 @@ rule "One illness - Sinus Infection"
 	    	illness.setSymptoms($resList);
 	    	allSymptomIllnesses.add(illness);
         } else {
-        	if ($resList.size() >= 4){
+        	if ($resList.size() >= 3){
 		        Illness i = new Illness();
 		    	i.setCategory(Illness.Category.FIRST);
 		    	i.setName("Sinus Infection");
@@ -106,27 +121,67 @@ end
 rule "Special request - one illness - Sinus Infection"
 	agenda-group "special-request-one-illness"
     when
-        $cf: ColdOrFeverEvent( illnessName == "Cold" || illnessName == "Fever" && patientId == pId )
+    	$d1: Diagnose( illnessName == "Cold" || illnessName == "Fever" && patientId == pId , $d: date &&
+          new Date() < (add60Days($d)) )
     then    	
+    	Symptom s = new Symptom();
+	    s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+	    s.setSpecific(true);
+		s.setHelper("Suffered from cold/fever in past 60 days");
         if (!allSymptomIllnesses.isEmpty()){
         	for (Object o : allSymptomIllnesses){
         		Illness i = (Illness) o;
         		if (i.getName().equals("Sinus Infection")){
         			if (i.getSymptoms().size() == 6){
-        				Symptom s = new Symptom();
-				    	s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
-				    	s.setSpecific(true);
-				    	s.setHelper("Suffered from cold/fever in past 60 days");
         				i.getSymptoms().add(s);
         				break;
         			}else{
-        				illnesses.remove(i);
+        				allSymptomIllnesses.remove(i);
         				break;
         			}
         		}
         	}
         }
+        boolean flag = true;
+        boolean flag2 = false;
+        boolean addSymptom = true;
+        if (!illnesses.isEmpty()){
+        	for (Object o : illnesses){
+        		Illness i = (Illness) o;
+        		if (i.getName().equals("Sinus Infection")){
+        			flag2 = true;
+        			for (Object o1: i.getSymptoms()){
+        				Symptom s1 = (Symptom) o1;
+        				if (s1.getTerm() == Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS){
+        					addSymptom = false;
+        					break;
+        				}
+        			}
+        			if (addSymptom){
+	        			i.getSymptoms().add(s);
+	        			flag = false;
+	        			break;
+        			}
+        			
+        		}
+        	}
+        }
+        if (flag && flag2){
+        	Illness i = new Illness();
+        	i.setCategory(Illness.Category.FIRST);
+			i.setName("Sinus Infection");
+			i.getSymptoms().add(s);
+			System.out.println("ovdje je nova bolest: "+ i.getName());
+			illnesses.add(i);
+        }
 end
+
+function Date add60Days(Date date){
+	Calendar newCal = Calendar.getInstance();
+	newCal.setTime(date);
+	newCal.add(Calendar.DATE, 60);
+	return newCal.getTime();
+}
 
 rule "Sinus Infection - Symptoms"
 	no-loop 

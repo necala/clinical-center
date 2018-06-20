@@ -3,25 +3,29 @@ package drools.spring.rules;
 import drools.spring.example.model.Symptom;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.User;
+import drools.spring.example.model.Diagnose;
+import drools.spring.example.model.DiagnoseSymptom;
 import drools.spring.example.model.events.HighPressureEvent;
 import java.util.List;
 import java.util.ArrayList;
 
 global ArrayList<Illness> illnesses;
 global ArrayList<Illness> allSymptomIllnesses;
-global String pId;
+global Long pId;
 
 rule "At least 10 times patient had high pressure in last 6months - all ilnesses"
 	agenda-group "all-illnesses"
     when
-        $hp: HighPressureEvent( $p: patientId )
+    	$d : Diagnose( $idD : id && patientId == pId )
+    	$dSymptom : DiagnoseSymptom( diagnoseId == $idD && symptomTerm == "HIGH_PRESSURE" )
         Number(intValue >= 10) from accumulate(
-            $hp2: HighPressureEvent(
-                this != $hp, 
-                patientId == $p, 
-                this meets[183d] $hp
+            $ds: DiagnoseSymptom(
+                this != $dSymptom, 
+                diagnoseId == $idD, 
+                symptomTerm == "HIGH_PRESSURE",
+                this meets[183d] $dSymptom
             ),
-            count($hp2)
+            count($ds)
         )
     then
     	Symptom s = new Symptom();
@@ -49,14 +53,16 @@ end
 rule "At least 10 times patient had high pressure in last 6months -one ilness"
 	agenda-group "one-illness"
     when
-        $hp: HighPressureEvent( $p: patientId )
+        $d : Diagnose( $idD : id && patientId == pId )
+    	$dSymptom : DiagnoseSymptom( diagnoseId == $idD && symptomTerm == "HIGH_PRESSURE" )
         Number(intValue >= 10) from accumulate(
-            $hp2: HighPressureEvent(
-                this != $hp, 
-                patientId == $p, 
-                this meets[183d] $hp
+            $ds: DiagnoseSymptom(
+                this != $dSymptom, 
+                diagnoseId == $idD, 
+                symptomTerm == "HIGH_PRESSURE",
+                this meets[183d] $dSymptom
             ),
-            count($hp2)
+            count($ds)
         )
     then
     	Symptom s = new Symptom();

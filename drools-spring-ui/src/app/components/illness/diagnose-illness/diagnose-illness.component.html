@@ -2,9 +2,10 @@
 	<p>Please Enter Symptoms</p>
 	
 	<div class="row">
-		<label for="fieldPatient" class="form-control-label">Patient Nr:</label>
-		    <input type="text"  [(ngModel)]="patient.patientId" placeholder="Patient Nr"
-		               class="form-control" id="fieldPatient" name="fieldPatient1" >
+		<label for="fieldPatient" class="form-control-label">Patient: </label>
+		    <select [(ngModel)]="patient.id" class="form-control" id="fieldPatient" name="fieldPatient1" >
+			  <option *ngFor="let p of patients" [value]="p.id" >{{p.firstName}} {{p.lastName}} [ {{p.patientId }} ]</option>
+			</select>
 	</div>
 	<div class="row">
 		<div id="term">
@@ -83,6 +84,9 @@
 	
 	<button class="btn btn-primary" (click)="diagnoseAlone()">Set diagnose alone</button>
 	
+	<br/><br/>
+	<button class="btn btn-danger" (click)="back()">Back</button>
+	
 	<div [ngStyle]="{'display':display}" class="modal" id="illnessModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -93,35 +97,37 @@
         </div>
         <div class="modal-body">
           <div *ngIf="!diagnostic">
-          	<table id="table1" class="table table-hover">
-			<thead>
-		    <tr>
-		      <td>Name</td>
-		      <td>Category</td>
-		      <td>Symptoms</td>
-		      <td></td>
-			</tr>
-			</thead>
-		    <tbody>
-		    <tr id="tr" *ngFor="let illness of allIllnesses">
-			
-				<td>
-			   		{{illness.name}}
-			    </td>
-			    <td>
-			    	{{illness.category}}
-			    </td>
-			    <td>
-			    	{{illness.symptoms.length}}
-			    </td>
-			    <td>
-				  	<button class="btn btn-success" (click)="choose(illness)">Choose</button>
-			    </td>
-			
-			    </tr>
-		    </tbody>
-		  </table>
-          </div>
+          <div id="div1">
+	          <table id="table1" class="table table-hover">
+				<thead>
+			    <tr>
+			      <td>Name</td>
+			      <td>Category</td>
+			      <td>Symptoms</td>
+			      <td></td>
+				</tr>
+				</thead>
+			    <tbody>
+			    <tr id="tr" *ngFor="let illness of allIllnesses">
+				
+					<td>
+				   		{{illness.name}}
+				    </td>
+				    <td>
+				    	{{illness.category}}
+				    </td>
+				    <td>
+				    	{{illness.symptoms.length}}
+				    </td>
+				    <td>
+					  	<button class="btn btn-success" (click)="choose(illness)">Choose</button>
+				    </td>
+				
+				    </tr>
+			    </tbody>
+			  </table>
+	          </div>
+			</div>
           <div *ngIf="diagnostic">
           	<div class="row">
           		<div id="ill">
@@ -247,10 +253,10 @@
 
         <div class="modal-footer">
           <ng-container *ngIf="chosenMedicaments.length > 0">
-          	<button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord()">Prescribe medicaments</button>
+          	<button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord2()">Prescribe medicaments</button>
           </ng-container>
           <ng-container *ngIf="chosenMedicaments.length == 0">
-          	<button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord()">Skip</button>
+          	<button id="modalCloseButton" class="btn btn-success" data-dismiss="modal" (click)="finishRecord2()">Skip</button>
           </ng-container>
           <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalMedicamentsClose()">Close</button>
         </div>
@@ -280,4 +286,5 @@
     </div>
   </div>
   
+</div>
 </div>

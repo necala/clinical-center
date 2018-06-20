@@ -1,6 +1,5 @@
 <div id="registration" class="col-md-6 col-md-offset-3">
-  <h2>Welcome to registration</h2>
-  <form name="form" (ngSubmit)="register()" #f="ngForm" novalidate>
+  <form name="form" #f="ngForm" novalidate>
 
     <div class="form-group">
       <label>First name</label>
@@ -29,7 +28,7 @@
     <div class="form-group">
       <label>Email</label>
       <input type="email" class="form-control"
-             name="lastName"
+             name="email"
              [(ngModel)]="model.email"
              #email="ngModel"
              id="email"
@@ -50,40 +49,46 @@
       <div *ngIf="f.submitted && !username.valid" class="help-block">Username is required.</div>
     </div>
 
-    <div class="form-group">
-      <label>Password</label>
-      <input type="password" class="form-control"
-             name="password"
-             [(ngModel)]="model.password"
-             #password="ngModel"
-             id="password"
-             required
-      />
-      <div *ngIf="f.submitted && !password.valid" class="help-block">Password is required.</div>
-    </div>
-
-
-    <div class="form-group">
-      <label>Repeat password</label>
-      <input type="password" class="form-control"
-             name="repeatedPassword"
-             [(ngModel)]="repeatedPassword"
-             #repeated="ngModel"
-             id="repeatedPassword"
-             required
-      />
-    </div>
-
-    <div id="passwordsDontMatchDiv" *ngIf="f.submitted && password.value !== repeated.value" class="help-block">Passwords don't match.</div>
-
+	<ng-container *ngIf="!update">
+	
+	    <div class="form-group">
+	      <label>Password</label>
+	      <input type="password" class="form-control"
+	             name="password"
+	             [(ngModel)]="model.password"
+	             #password="ngModel"
+	             id="password"
+	             required
+	      />
+	      <div *ngIf="f.submitted && !password.valid" class="help-block">Password is required.</div>
+	    </div>
+	
+	
+	    <div class="form-group">
+	      <label>Repeat password</label>
+	      <input type="password" class="form-control"
+	             name="repeatedPassword"
+	             [(ngModel)]="repeatedPassword"
+	             #repeated="ngModel"
+	             id="repeatedPassword"
+	             required
+	      />
+	    </div>
+	
+	    <div id="passwordsDontMatchDiv" *ngIf="f.submitted && password.value !== repeated.value" class="help-block">Passwords don't match.</div>
+	</ng-container>
     <br />
 
-    <div class="form-group">
-      <button id="registerButton" class="btn btn-primary">Register</button>
+    <div class="form-group" *ngIf="!update">
+      <button  class="btn btn-danger" (click)="back()">Back</button>
+      <button id="registerButton" class="btn btn-primary" (click)="register()">Register</button>
     </div>
   </form>
+   <div *ngIf="update">
+      <button  class="btn btn-danger" (click)="back()">Back</button>
+      <button class="btn btn-primary" (click)="updateDoctor()">Update</button>
+    </div>
   <br />
-  <a id="loginLink" routerLink="../login">Already registered?</a>
   <br />
 </div>
 

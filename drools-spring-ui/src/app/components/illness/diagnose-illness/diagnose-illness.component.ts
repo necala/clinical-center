@@ -3,10 +3,15 @@ import { Medicament } from '../../../model/medicament';
 import { Patient } from '../../../model/patient';
 import { Record } from '../../../model/record';
 import { Symptom } from '../../../model/symptom';
+import { User } from '../../../model/user';
 import { IllnessService } from '../../../service/illness.service';
+import { LoginService } from '../../../service/login.service';
 import { MedicamentService } from '../../../service/medicament.service';
+import { PatientService } from '../../../service/patient.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import {Location} from '@angular/common';
+
 
 @Component({
   selector: 'app-diagnose-illness',
@@ -44,8 +49,13 @@ export class DiagnoseIllnessComponent implements OnInit {
   errorMsg: string;
   displayAllergy: string;
 
-  constructor( private illnessService: IllnessService,
-               private router: Router, private medicamentService: MedicamentService ) {
+  patients: Patient[];
+  redirectToPatients: boolean;
+  doctor: User;
+
+  constructor( private illnessService: IllnessService, private patientService: PatientService,
+               private router: Router, private medicamentService: MedicamentService,
+               private loginService: LoginService, private location: Location ) {
     this.tempChosen = false;
     this.symptom = new Symptom();
     this.symptoms = [];
@@ -65,10 +75,18 @@ export class DiagnoseIllnessComponent implements OnInit {
     this.chosenIllness = new Illness();
     this.chosenMedicament = new Medicament();
     this.errorMsg = '';
+    this.patients = [];
+    this.redirectToPatients = false;
+    this.doctor = new User();
   }
 
   ngOnInit() {
     this.getMedicaments();
+    this.getPatients();
+    this.doctor.id = this.loginService.getId();
+    this.doctor.username = this.loginService.getUsername();
+    console.log(this.doctor.id);
+    console.log(this.doctor.username);
   }
 
   newSyptom() {
@@ -95,24 +113,38 @@ export class DiagnoseIllnessComponent implements OnInit {
   getAll() {
     const i: Illness = new Illness();
     i.symptoms = this.symptoms;
-    i.patient = this.patient;
     this.diagnostic = false;
-    this.illnessService.allIllnesses(i)
+    this.illnessService.allIllnesses(i, this.patient.id)
       .then( res => {
         this.allIllnesses = res;
         this.display = 'block';
       });
   }
 
+  getPatients() {
+    this.patientService.getPatients().then(
+      res => {
+        this.patients = res;
+        if (res.length > 0) {
+          this.patient = this.patients[0];
+        }
+      }
+    ).catch(
+      res => {
+        this.redirectToPatients = true;
+        this.errorMsg = 'Please register patients in order to set a diagnose!';
+        this.displayAllergy = 'block';
+      }
+    );
+  }
+
   getOne() {
     const i: Illness = new Illness();
     i.symptoms = this.symptoms;
-    i.patient = this.patient;
     this.diagnostic = false;
-    this.illnessService.oneIllness(i)
+    this.illnessService.oneIllness(i, this.patient.id)
       .then( res => {
-        this.allIllnesses = [];
-        this.allIllnesses.push(res);
+        this.allIllnesses = res
         this.display = 'block';
       })
       .catch(
@@ -195,6 +227,9 @@ export class DiagnoseIllnessComponent implements OnInit {
   }
 
   onModalAllergyClose() {
+    if (this.redirectToPatients) {
+      this.router.navigate(['../patients']);
+    }
     this.displayAllergy = 'none';
   }
 
@@ -221,5 +256,31 @@ export class DiagnoseIllnessComponent implements OnInit {
        }
      );
 
+  }
+
+  finishRecord2() {
+    this.record.illness = this.chosenIllness;
+    this.record.patient = this.patient;
+    this.record.medicaments = this.chosenMedicaments;
+    this.record.doctor = this.doctor;
+    this.illnessService.diagnose(this.record).then(
+      res => {
+        this.display = 'none';
+        this.displayMedicaments = 'none';
+        this.router.navigate(['../diagnoses']);
+      })
+     .catch(
+       res => {
+         console.log(res.error);
+         this.errorMsg = res.error;
+         this.displayAllergy = 'block';
+         this.chosenMedicaments = [];
+       }
+     );
+
+  }
+
+  back() {
+    this.location.back();
   }
 }

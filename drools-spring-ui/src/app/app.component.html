@@ -1,15 +1,31 @@
 <nav class="navbar navbar-expand-md bg-dark navbar-dark fixed-top">
   <a class="navbar-brand" [routerLink]="['']">Menu</a>
   <ul class="navbar-nav">
-    
-    <li *ngIf="isSignedIn()" class="nav-item">
-      <a class="nav-link" [routerLink]="['/diagnose-illness']">Diagnose Illness</a>
+  
+  	<li *ngIf="isAdminSignedIn()" class="nav-item">
+      <a class="nav-link" [routerLink]="['/doctors']">Doctors</a>
+    </li>
+  
+  	<li *ngIf="isSignedIn()" class="nav-item">
+      <a class="nav-link" [routerLink]="['/patients']">Patients</a>
     </li>
     
     <li *ngIf="isSignedIn()" class="nav-item">
-      <a class="nav-link" [routerLink]="['/medicaments']">Manage Medicaments</a>
+      <a class="nav-link" [routerLink]="['/diagnoses']">Diagnoses</a>
     </li>
     
+    <li *ngIf="isSignedIn()" class="nav-item">
+      <a class="nav-link" [routerLink]="['illnesses']">Illnesses</a>
+    </li>
+    
+    <li *ngIf="isSignedIn()" class="nav-item">
+      <a class="nav-link" [routerLink]="['/medicaments']">Medicaments</a>
+    </li>
+    
+    <li *ngIf="isSignedIn()" class="nav-item">
+      <a class="nav-link" [routerLink]="['/reports']">Reports</a>
+    </li>
+ 
     <li *ngIf="isSignedIn()" class="nav-item">
       <a id="sign-out-link" class="nav-link" (click)="signOut()">Sign Out</a>
     </li>

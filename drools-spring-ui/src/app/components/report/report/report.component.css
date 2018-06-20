@@ -1,0 +1,25 @@
+#reports{
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+
+#tr{
+  cursor: pointer;
+}
+
+.row{
+  display: table-row;
+}
+
+
+#tableSym {
+	width: 900px;
+}
+
+#divSym{
+  overflow:auto;
+  height: 400px;
+  width: 900px;
+}
+

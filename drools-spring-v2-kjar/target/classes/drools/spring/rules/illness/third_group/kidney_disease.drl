@@ -4,6 +4,7 @@ import drools.spring.example.model.Symptom;
 import drools.spring.example.model.Record;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.Patient;
+import drools.spring.example.model.Diagnose;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Calendar;
@@ -11,7 +12,7 @@ import java.util.Calendar;
 
 global ArrayList<Illness> illnesses;
 global ArrayList<Illness> allSymptomIllnesses;
-global String pId;
+global Long pId;
 
 rule "All illnesses - Chronic Kidney Disease"
 	agenda-group "all-illnesses"
@@ -41,23 +42,37 @@ end
 rule "Specific request - all illnesses - Kidney Disease"
 	agenda-group "special-request-all-illnesses"
     when
-    	$i: Illness( name == "Diabetes" )
-    	$p: Patient( patientId == pId )
-        $r: Record( illness == $i, patient == $p )
+    	$i: Diagnose( illnessName == "Diabetes" && patientId == pId )
     then    	
+    	boolean flag = true;
+    	boolean addSymptom = true;
+    	boolean flag2 = false;
         if (!illnesses.isEmpty()){
         	for (Object o: illnesses){
         		Illness i = (Illness) o;
         		if (i.getName().equals("Chronic Kidney Disease")){
-        			Symptom s = new Symptom();
-				    s.setTerm(Symptom.Term.SUFFERES_FROM_DIABETES);
-			    	s.setSpecific(true);
-			    	s.setHelper("Sufferes from diabetes");
-        			i.getSymptoms().add(s);
-        			break;
+        			flag2 = true;
+        			for (Object o1: i.getSymptoms()){
+        				Symptom s1 = (Symptom) o1;
+        				if (s1.getTerm() == Symptom.Term.SUFFERES_FROM_DIABETES){
+        					addSymptom = false;
+        					break;
+        				}
+        			}
+        			if (addSymptom){
+	        			Symptom s = new Symptom();
+					    s.setTerm(Symptom.Term.SUFFERES_FROM_DIABETES);
+				    	s.setSpecific(true);
+				    	s.setHelper("Sufferes from diabetes");
+	        			i.getSymptoms().add(s);
+	        			flag = false;
+	        			break;
+	        		}
         		}
         	}
-        }else{
+        }
+
+		if (flag && !flag2){
         	Illness i = new Illness();
 	    	i.setCategory(Illness.Category.THIRD);
 	    	i.setName("Chronic Kidney Disease");
@@ -73,23 +88,37 @@ end
 rule "Suffers from Hypertension more than six months"
 	agenda-group "special-request-all-illnesses"
     when
-    	$i: Illness( name == "Hypertension" )
-    	$p: Patient( patientId == pId )
-        $r: Record( illness == $i, patient == $p, $d: date,  new Date() > (addSixMonths($d))  )
+    	$i: Diagnose( $d: date && illnessName == "Hypertension" &&  patientId == pId &&  new Date() > (addSixMonths($d))  )
     then   
+    	boolean flag = true;
+    	boolean addSymptom = true;
+    	boolean flag2 = false;
         if (!illnesses.isEmpty()){
         	for (Object o: illnesses){
         		Illness i = (Illness) o;
         		if (i.getName().equals("Chronic Kidney Disease")){
-        			Symptom s = new Symptom();
-				    s.setTerm(Symptom.Term.SUFFERES_FROM_HYPERTENSION_FOR_AT_LEAST_6_MONTHS);
-			    	s.setSpecific(true);
-			    	s.setHelper("Sufferes from Hypertension for at least 6 months");
-        			i.getSymptoms().add(s);
-        			break;
+        			flag2 = true;
+        			for (Object o1: i.getSymptoms()){
+        				Symptom s1 = (Symptom) o1;
+        				if (s1.getTerm() == Symptom.Term.SUFFERES_FROM_HYPERTENSION_FOR_AT_LEAST_6_MONTHS){
+        					addSymptom = false;
+        					break;
+        				}
+        			}
+        			if (addSymptom){
+        				Symptom s = new Symptom();
+					    s.setTerm(Symptom.Term.SUFFERES_FROM_HYPERTENSION_FOR_AT_LEAST_6_MONTHS);
+				    	s.setSpecific(true);
+				    	s.setHelper("Sufferes from Hypertension for at least 6 months");
+	        			i.getSymptoms().add(s);
+	        			flag = false;
+	        			break;
+        			}
         		}
         	}
-        }else{
+        }
+		
+		if (flag && !flag2){
         	Illness i = new Illness();
 	    	i.setCategory(Illness.Category.THIRD);
 	    	i.setName("Chronic Kidney Disease");
@@ -117,9 +146,7 @@ rule "Patient suffers from diabetes and wants one illness"
             action(list1.add($sym);),
             result(list1)
         )
-        $i: Illness( name == "Diabetes" )
-    	$p: Patient( patientId == pId )
-        $r: Record( illness == $i, patient == $p )
+        $i: Diagnose( illnessName == "Diabetes" && patientId == pId )
     then    	
         if (!$resList.isEmpty() && $resList.size() >= 2){
 	        Illness i = new Illness();
@@ -132,14 +159,29 @@ rule "Patient suffers from diabetes and wants one illness"
 	      	s.setHelper("Sufferes from diabetes");
 	    	i.getSymptoms().add(s);
 	    	boolean flag = true;
+	        boolean flag2 = true;
+	        boolean addSymptom = true;
 	    	for (Object o: allSymptomIllnesses){
+	    		
 	    		Illness i1 = (Illness) o;
 	    		if (i1.getName().equals("Chronic Kidney Disease")){
-	    			flag = false;
-	    			break;
+	    			flag2 = false;
+	    			for (Object o1: i1.getSymptoms()){
+        				Symptom s1 = (Symptom) o1;
+        				if (s1.getTerm() == Symptom.Term.SUFFERES_FROM_DIABETES){
+        					addSymptom = false;
+        					break;
+        				}
+        			}
+        			if (addSymptom){
+        				i1.getSymptoms().add(s);
+		    			flag = false;
+		    			break;
+        			}
+	    			
 	    		}
 	    	}
-	    	if (flag){
+	    	if (flag && flag2){
 	    		allSymptomIllnesses.add(i);
 	    	}
         } 
@@ -147,6 +189,7 @@ end
 
 rule "Patient suffers from Hypertension for one illness"
 	agenda-group "special-request-one-illness"
+	no-loop 
     when
         $list: List() from collect(Symptom( ))
        
@@ -160,9 +203,7 @@ rule "Patient suffers from Hypertension for one illness"
             action(list1.add($sym);),
             result(list1)
         )
-        $i: Illness( name == "Hypertension" )
-    	$p: Patient( patientId == pId )
-        $r: Record( illness == $i, patient == $p, $d: date,  new Date() > (addSixMonths($d))  )
+        $i: Diagnose( $d: date && illnessName == "Hypertension" &&  patientId == pId &&  new Date() > (addSixMonths($d))  )
     then    	
         if (!$resList.isEmpty() && $resList.size() >= 2){
 	        Illness i = new Illness();

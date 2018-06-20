@@ -1,5 +1,9 @@
 import { Medicament } from '../../../model/medicament';
+import { MedicamentAllergy } from '../../../model/medicament-allergy';
+import { Patient } from '../../../model/patient';
+import { LoginService } from '../../../service/login.service';
 import { MedicamentService } from '../../../service/medicament.service';
+import { PatientService } from '../../../service/patient.service';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -19,18 +23,32 @@ export class MedicamentsComponent implements OnInit {
   patientId: string;
   medicamentId: number;
 
+  patients: Patient[];
+
+  medicamentAllergy: MedicamentAllergy;
+
+  displayError: string;
+  role: string;
+  updateMed: boolean;
 
   constructor(private medicamentService: MedicamentService,
-              private router: Router) {
+              private router: Router, private loginService: LoginService,
+              private patientService: PatientService) {
     this.medicaments = [];
     this.medicament = new Medicament();
     this.display = 'none';
     this.addAllergy = false;
     this.patientId = '';
     this.medicamentId = -1;
+    this.patients = [];
+    this.medicamentAllergy = new MedicamentAllergy();
+    this.displayError = 'none';
+    this.role = '';
+    this.updateMed = false;
   }
 
   ngOnInit() {
+    this.role = this.loginService.getRole();
     this.getMedicaments();
   }
 
@@ -53,7 +71,20 @@ export class MedicamentsComponent implements OnInit {
   openModal() {
     this.medicament = new Medicament();
     this.addAllergy = false;
+    this.updateMed = false;
     this.display = 'block';
+  }
+
+  update(id: number) {
+    this.medicamentService.oneMedicament(id).then(
+      res => {
+        this.medicament = res;
+        this.addAllergy = false;
+        this.updateMed = true;
+        this.display = 'block';
+      }
+    );
+
   }
 
   onModalClose() {
@@ -65,23 +96,54 @@ export class MedicamentsComponent implements OnInit {
   }
 
   saveMedicament() {
-    this.medicamentService.addMedicament(this.medicament).then(
+    if (this.updateMed) {
+      this.change();
+    }else{
+      this.medicamentService.addMedicament(this.medicament).then(
+      res => {
+      this.getMedicaments();
+      this.display = 'none';
+    });
+    }
+    
+  }
+
+  change() {
+    this.medicamentService.changeMedicament(this.medicament).then(
       res => {
       this.getMedicaments();
       this.display = 'none';
     });
   }
 
-  addMedicamentAllergic(id: number) {
+  addMedicamentAllergic(id: number, name: string) {
     this.medicamentId = id;
-    this.addAllergy = true;
-    this.display = 'block';
+    this.medicamentAllergy.medicamentId = id;
+    this.medicamentAllergy.medicamentName = name;
+    this.patientService.getPatients().then(
+      res => {
+        this.patients = res;
+        if (res.length > 0) {
+          this.medicamentAllergy.patientId = this.patients[0].id;
+          this.addAllergy = true;
+          this.display = 'block';
+        }
+
+      }
+    );
   }
 
   saveAllergy() {
-    this.medicamentService.addMedicamentAllergy(this.medicamentId, this.patientId).then(
+    this.patientService.addMedicamentAllergy(this.medicamentAllergy).then(
       res => {
       this.display = 'none';
-    });
+    }).catch(
+      res => {
+        this.displayError = 'block';
+      });
+  }
+
+  onModalErrorClose() {
+    this.displayError = 'none';
   }
 }

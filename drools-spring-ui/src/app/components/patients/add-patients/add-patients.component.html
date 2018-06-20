@@ -1,0 +1,82 @@
+<div id="patients">
+
+	<div id="divSym">
+		<table id="tableSym" class="table table-hover">
+			<thead>
+		    <tr>
+		      <td>First Name</td>
+		      <td>Last Name</td>
+		      <td>Patient ID</td>
+		      <td></td>
+			</tr>
+			</thead>
+		    <tbody>
+		    <tr id="tr" *ngFor="let p of patients">
+			
+				<td title="Click to see details!" (click)="gotoPatient(p.id)">
+			   		{{p.firstName}}
+			    </td>
+			    <td title="Click to see details!" (click)="gotoPatient(p.id)">
+			   		{{p.lastName}}
+			    </td>
+			    <td title="Click to see details!" (click)="gotoPatient(p.id)">
+			   		{{p.patientId}}
+			    </td>
+			    <td>
+			    	<ng-container *ngIf="role == 'ADMIN'">
+			    		<button class="btn btn-danger"  (click)="deletePatient(p.id)">Delete</button>
+			    	</ng-container>
+			    </td>
+			</tr>
+		    </tbody>
+		</table>
+	</div>
+	<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Patient</button>
+	
+	<div [ngStyle]="{'display':display}" class="modal" id="symModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalClose()">&times;</button></span>
+        </div>
+        <div class="modal-body">
+        <div class="row">
+          <div id="fName">
+				<label for="fName" class="form-control-label">First Name:</label>
+				<input type="text" [(ngModel)]="patient.firstName" placeholder="First Name"
+			                    class="form-control" id="fName" name="fName1">
+			         
+			</div>
+        </div>
+        
+        <div class="row">
+          <div id="fLName">
+				<label for="fLName" class="form-control-label">Last Name:</label>
+				<input type="text" [(ngModel)]="patient.lastName" placeholder="Last Name"
+			                    class="form-control" id="fLName" name="fLName1">
+			         
+			</div>
+        </div>
+        
+        <div class="row">
+          <div id="fId">
+				<label for="fId" class="form-control-label">Patient ID:</label>
+				<input type="text" [(ngModel)]="patient.patientId" placeholder="Patient ID"
+			                    class="form-control" id="fId" name="fId1">
+			         
+			</div>
+        </div>
+        
+        <div class="modal-footer">
+          
+          	<button class="btn btn-success" data-dismiss="modal" (click)="addPatient()">Register Patient</button>
+          
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+

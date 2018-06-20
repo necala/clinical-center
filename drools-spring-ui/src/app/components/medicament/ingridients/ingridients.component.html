@@ -7,6 +7,7 @@
 		      <td>Name</td>
 		      <td></td>
 		      <td></td>
+		      <td></td>
 			</tr>
 			</thead>
 		    <tbody>
@@ -14,6 +15,9 @@
 			
 				<td>
 			   		{{i.name}}
+			    </td>
+			    <td>
+			    	<button class="btn btn-success" (click)="update(i.id)">Update</button>
 			    </td>
 			    <td>
 			    	<button class="btn btn-warning" (click)="addIngridientAllergic(i.id)">Patient Allergic</button>
@@ -25,8 +29,14 @@
 		    </tbody>
 		</table>
 	</div>
-	<button class="btn btn-primary" (click)="back()">Back</button>
-	<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Ingridient</button>
+	<br/><br/>
+	<div *ngIf="role == 'ADMIN'">
+		<button class="btn btn-danger" (click)="back()">Back</button>
+		<button class="btn btn-success" data-dismiss="modal" (click)="openModal()">Add Ingridient</button>
+	</div>
+	<div *ngIf="role != 'ADMIN'">
+		<button class="btn btn-danger" (click)="back()">Back</button>
+	</div>
 	
 	<div [ngStyle]="{'display':display}" class="modal" id="symModal" tabindex="-1">
     <div class="modal-dialog">
@@ -46,9 +56,9 @@
 			</div>
 			<div *ngIf="addAllergy">
         	<div class="row">
-				<label for="fieldPatient" class="form-control-label">Patient Nr:</label>
-				    <input type="text"  [(ngModel)]="patientId" placeholder="Patient Nr"
-				               class="form-control" id="fieldPatient" name="fieldPatient1" >
+				<select [(ngModel)]="ingridientAllergy.patientId" class="form-control" id="fieldPatient" name="fieldPatient1">
+				  <option *ngFor="let p of patients" [value]="p.id" >{{p.firstName}} {{p.lastName}} [ {{p.patientId }} ]</option>
+				</select>
 			</div>
         </div>
 		
@@ -57,7 +67,7 @@
 
         <div class="modal-footer">
           <ng-container *ngIf="!addAllergy">
-          	<button class="btn btn-success" data-dismiss="modal" (click)="saveIngridient()">Add Ingridient</button>
+          	<button class="btn btn-success" data-dismiss="modal" (click)="saveIngridient()">Save</button>
           </ng-container>
           <ng-container *ngIf="addAllergy">
           	<button class="btn btn-success" data-dismiss="modal" (click)="saveAllergy()">Add Allergy For Patient</button>
@@ -67,4 +77,27 @@
       </div>
     </div>
   </div>
+  
+  <div [ngStyle]="{'display':displayError}" class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalErrorClose()">&times;</button></span>
+       
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">Patient allready allergic to this ingredient!</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalErrorClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </div>

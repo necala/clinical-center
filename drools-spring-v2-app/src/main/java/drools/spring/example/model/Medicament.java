@@ -30,6 +30,7 @@ public class Medicament implements Serializable {
 	@OneToMany(mappedBy="medicament", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Ingridient> ingridients = new ArrayList<Ingridient>();
 	
+	
 	public Medicament() {
 		super();
 	}
@@ -67,5 +68,7 @@ public class Medicament implements Serializable {
 	public void setIngridients(List<Ingridient> ingridients) {
 		this.ingridients = ingridients;
 	}
+
+	
 	
 }

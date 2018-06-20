@@ -33,6 +33,17 @@ export class LoginService {
     return username ? username : '';
   }
 
+  getRole(): string {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const category = currentUser && currentUser.category;
+    return category ? category : '';
+  }
+
+  getId(): number {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const id = currentUser && currentUser.id;
+    return id ? id : -1;
+  }
 
   isSignedIn(): boolean {
     return this.getUsername() !== '';

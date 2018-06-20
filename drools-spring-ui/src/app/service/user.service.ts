@@ -16,4 +16,37 @@ export class UserService {
       .toPromise()
       .then(res => res as User);
   }
+
+  public getDoctors(): Promise<User[]> {
+
+    return this.http.get('/api/users')
+      .toPromise()
+      .then(res => res as User[]);
+  }
+
+  public getDoctor(id: number): Promise<User> {
+
+    const url = `/api/users/${id}`;
+
+    return this.http.get(url)
+      .toPromise()
+      .then(res => res as User);
+  }
+
+  public updateDoctor(user: User): Promise<User> {
+
+    return this.http.post('/api/users', user)
+      .toPromise()
+      .then(res => res as User);
+  }
+
+
+  public deleteDoctor(id: number): Promise<{}> {
+
+    const url = `/api/users/${id}`;
+
+    return this.http.delete(url, {responseType: 'text'})
+      .toPromise();
+  }
+
 }

@@ -1,6 +1,7 @@
 import { Illness } from './illness';
 import { Medicament } from './medicament';
 import { Patient } from './patient';
+import { User } from './user';
 
 export class Record {
   id: number;
@@ -8,6 +9,7 @@ export class Record {
   patient: Patient;
   date: Date;
   medicaments: Medicament[];
+  doctor: User;
 
   public constructor() {
     this.id = -1;
@@ -15,5 +17,6 @@ export class Record {
     this.patient = new Patient();
     this.date = new Date();
     this.medicaments = [];
+    this.doctor = new User();
   }
 }
