@@ -13,20 +13,20 @@ export class IllnessService {
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  public allIllnesses(illness: Illness, id: number): Promise<Illness[]> {
+  public allIllnesses(symptoms: Symptom[], id: number): Promise<Illness[]> {
 
     const url = `/api/illness/all/${id}`;
 
-    return this.http.post(url, illness)
+    return this.http.post(url, symptoms)
       .toPromise()
       .then(res => res as Illness[]);
   }
 
-  public oneIllness(illness: Illness, id: number): Promise<Illness[]> {
+  public oneIllness(symptoms: Symptom[], id: number): Promise<Illness[]> {
 
     const url = `/api/illness/one/${id}`;
 
-    return this.http.post(url, illness)
+    return this.http.post(url, symptoms)
       .toPromise()
       .then(res => res as Illness[]);
   }

@@ -12,5 +12,6 @@ public interface SymptomRepository extends JpaRepository<Symptom, Long> {
 	public ArrayList<Symptom> findByTerm(Symptom.Term term);
 	public ArrayList<Symptom> findByIllness(Illness illness);
 	public ArrayList<Symptom> findAll();
+	public ArrayList<Symptom> findAllByIllnessOrderBySpecificsDesc(Illness illness);
 }
 

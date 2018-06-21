@@ -39,32 +39,6 @@ public class IllnessController {
 		this.symptomService = symptomService;
 	}
 	
-	@RequestMapping(value = "/illness/all/{patientId}", method = RequestMethod.POST, 
-			consumes = "application/json", produces = "application/json")
-	public ResponseEntity<ArrayList<Illness>> group(@RequestBody Illness illness1,
-													@PathVariable Long patientId){
-		
-		ArrayList<Illness> illness = illnessService.getIllnesses(illness1, patientId);
-		
-		return new ResponseEntity<>(illness, HttpStatus.OK);
-		
-	}
-	
-	@RequestMapping(value = "/illness/one/{patientId}", method = RequestMethod.POST, 
-			consumes = "application/json", produces = "application/json")
-	public ResponseEntity<ArrayList<Illness>> getOne(@RequestBody Illness illness1,
-										  @PathVariable Long patientId){
-		
-		ArrayList<Illness> illness = illnessService.getOneIllness(illness1, patientId);
-		
-		if (illness.isEmpty()){
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		
-		return new ResponseEntity<>(illness, HttpStatus.OK);
-		
-	}
-	
 	
 	@RequestMapping(value = "/illness/symptoms", method = RequestMethod.POST, 
 			consumes = "application/json", produces = "application/json")
@@ -189,6 +163,46 @@ public class IllnessController {
 		
 		return new ResponseEntity<>(illness, HttpStatus.OK);
 	}
+
 	
+	@RequestMapping(value = "/illness/one/{patientId}", method = RequestMethod.POST, 
+			consumes = "application/json", produces = "application/json")
+	public ResponseEntity<ArrayList<Illness>> getOneIllness(@RequestBody ArrayList<Symptom> symptoms,
+										  @PathVariable Long patientId){
+		
+		ArrayList<Illness> illnesses = illnessService.getOneIllness(symptoms, patientId);
+		
+		if (illnesses.isEmpty()){
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		for (Illness illness : illnesses){
+			illness.getSymptoms().clear();
+			illness.getSymptomsTerms().clear();
+		}
+		
+		return new ResponseEntity<>(illnesses, HttpStatus.OK);
+		
+	}
+	
+	@RequestMapping(value = "/illness/all/{patientId}", method = RequestMethod.POST, 
+			consumes = "application/json", produces = "application/json")
+	public ResponseEntity<ArrayList<Illness>> getAllIllness(@RequestBody ArrayList<Symptom> symptoms,
+										  @PathVariable Long patientId){
+		
+		ArrayList<Illness> illnesses = illnessService.getAllIllness(symptoms, patientId);
+		
+		if (illnesses.isEmpty()){
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		for (Illness illness : illnesses){
+			illness.getSymptoms().clear();
+			illness.getSymptomsTerms().clear();
+		}
+		
+		return new ResponseEntity<>(illnesses, HttpStatus.OK);
+		
+	}
 	
 }

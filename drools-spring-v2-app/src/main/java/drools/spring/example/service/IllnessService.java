@@ -4,15 +4,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.rule.QueryResults;
+import org.kie.api.runtime.rule.QueryResultsRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Map.Entry;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.Ingridient;
 import drools.spring.example.model.IngridientAllergy;
@@ -74,174 +80,140 @@ public class IllnessService {
     @Autowired
     DiagnoseMedicamentService diagnoseMedicamentService;
     
-    public ArrayList<Illness> getIllnesses(Illness illness1, Long patientId) {
-    	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) illness1.getSymptoms();
-    	symptoms = handleSymptoms(symptoms);
-    	ArrayList<Illness> illness = new ArrayList<Illness>();
-        KieSession kieSession = kieContainer.newKieSession();
-        kieSession.setGlobal("illnesses", illness);
-        kieSession.setGlobal("pId", patientId);
-        
-        
-        for (Symptom s: symptoms){
-        	
-        	kieSession.insert(s);
-        }
-        
-        insertDiagnosesInSession(kieSession, patientId);
-        
-        
-        kieSession.getAgenda().getAgendaGroup("all-illnesses").setFocus();
-        
-        kieSession.fireAllRules();
-        
-        kieSession.getAgenda().getAgendaGroup("special-request-all-illnesses").setFocus();
-        
-        illness = (ArrayList<Illness>) kieSession.getGlobal("illnesses");
-        kieSession.setGlobal("illnesses", illness);
-        kieSession.fireAllRules();
-        
-        illness = (ArrayList<Illness>) kieSession.getGlobal("illnesses");
-        
-        
-        Collections.sort(illness, symptomsSizeComparator);
-
-        kieSession.dispose();
-        return illness;
-    }
     
-    public ArrayList<Illness> getOneIllness(Illness illness1, Long patientId) {
-    	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) illness1.getSymptoms();
-    	symptoms = handleSymptoms(symptoms);
-    	ArrayList<Illness> illnesses = new ArrayList<Illness>();
-    	ArrayList<Illness> allSymptomIllnesses = new ArrayList<Illness>();
-        
-    	KieSession kieSession = kieContainer.newKieSession();
-    	kieSession.setGlobal("illnesses", illnesses);
-        kieSession.setGlobal("allSymptomIllnesses", allSymptomIllnesses);
-        kieSession.setGlobal("pId", patientId);
-        
-        for (Symptom s: symptoms){
-        	
-        	kieSession.insert(s);
-        }
-        
-        insertDiagnosesInSession(kieSession, patientId);
-        
-        kieSession.getAgenda().getAgendaGroup("one-illness").setFocus();
-        
-        kieSession.fireAllRules();
-       
-        kieSession.getAgenda().getAgendaGroup("special-request-one-illness").setFocus();
-        
-        allSymptomIllnesses = (ArrayList<Illness>) kieSession.getGlobal("allSymptomIllnesses");
-        illnesses = (ArrayList<Illness>) kieSession.getGlobal("illnesses");
-        
-        kieSession.setGlobal("illnesses", illnesses);
-        kieSession.setGlobal("allSymptomIllnesses", allSymptomIllnesses);
-        
-        
-        kieSession.fireAllRules();
-        
-        allSymptomIllnesses = (ArrayList<Illness>) kieSession.getGlobal("allSymptomIllnesses");
-        
-        ArrayList<Illness> return_illnesses = new ArrayList<>();
-       
-        if (!allSymptomIllnesses.isEmpty()){
-        	
-        	if (allSymptomIllnesses.size()==1){
-        		if (allSymptomIllnesses.get(0).getName().equals("Chronic Kidney Disease") || 
-        				allSymptomIllnesses.get(0).getName().equals("Acute Kidney Injury")){
-        			if (allSymptomIllnesses.get(0).getSymptoms().size() > 2){
-        				
-        				ArrayList<Symptom> newSymptoms = new ArrayList<>();
-        				
-        				for (Symptom s: allSymptomIllnesses.get(0).getSymptoms()){
-        					boolean flag = true;
-        					if (!newSymptoms.isEmpty()){
-        						for (Symptom s1: newSymptoms){
-        							
-        							if (s1.getTerm().equals(s.getTerm()) ){
-        								flag = false;
-        								break;
-        							}
-        						}
-        					}
-    						if (flag){
-								newSymptoms.add(s);
-							}
-        				}
-        				allSymptomIllnesses.get(0).setSymptoms(newSymptoms);
-        				
-        				return_illnesses.add(allSymptomIllnesses.get(0));
-        			}
-        		}else{
-        			return_illnesses.add(allSymptomIllnesses.get(0));
-        		}
-        		
-        	}else{
-        		Collections.sort(allSymptomIllnesses, symptomsSizeComparator);
-        		if (allSymptomIllnesses.get(0).getName().equals("Chronic Kidney Disease") || 
-        				allSymptomIllnesses.get(0).getName().equals("Acute Kidney Injury")){
-        			if (allSymptomIllnesses.get(0).getSymptoms().size() > 2){
-        				return_illnesses.add(allSymptomIllnesses.get(0));
-        			}
-        		}else{
-        			for (Illness i: allSymptomIllnesses){
-        				boolean flag = true;
-        				if (!return_illnesses.isEmpty()){
-        					for(Illness i2: return_illnesses){
-        						if (i2.getClass().equals(i.getCategory())){
-        							flag = false;
-        							break;
-        						}
-        					}
-        				}
-        				if (flag){
-        					return_illnesses.add(i);
-        				}
-        			}
-        		}
-            }
-        }
-        
-        
-        illnesses = (ArrayList<Illness>) kieSession.getGlobal("illnesses");
-        kieSession.dispose();
-        
-        if (!illnesses.isEmpty()){
-        	Collections.sort(illnesses, symptomsSizeComparator);
+    public ArrayList<Illness> getOneIllness(ArrayList<Symptom> symptoms, Long patientId) {
+		KieSession kieSession = kieContainer.newKieSession();
 
-        	if (illnesses.get(0).getCategory().equals(Illness.Category.FIRST)){
-        		boolean flag = true;
-        		for (Illness i: return_illnesses){
-        			if (i.getCategory().equals(Illness.Category.FIRST)){
-        				flag = false;
-        				break;
-        			}
-        		}
-        		if (flag){
-        			return_illnesses.add(illnesses.get(0));
-        		}
-        	}
-        }
-        
-        return return_illnesses;
-    }
+		ArrayList<Illness> illnesses = findAll();
+		addSymptomsAndIllnesses(kieSession, symptoms, patientId, illnesses);
+		insertDiagnosesInSession(kieSession, patientId);
+
+		
+		Illness illnessCatFirst = new Illness();
+		illnessCatFirst.setName("illnessFirstCat");
+		
+		kieSession.insert(illnessCatFirst);
+		
+		Illness illnessCatSecond = new Illness();
+		illnessCatSecond.setName("illnessSecondCat");
+		
+		kieSession.insert(illnessCatSecond);
+		
+		
+		Illness illnessCatThird = new Illness();
+		illnessCatThird.setName("illnessThirdCat");
+
+		kieSession.insert(illnessCatThird);
+
+		kieSession.getAgenda().getAgendaGroup("set-symptom-num").setFocus();
+		
+		kieSession.fireAllRules();
+		
+		/*
+		for (Illness illness : illnesses) {
+			System.out.println(illness.getName() + " Broj simptoma: " + illness.getSymptomsFound());
+		}
+		*/
+		
+		kieSession.getAgenda().getAgendaGroup("set-illness").setFocus();
+		
+		kieSession.fireAllRules();
+
+		System.out.println(illnessCatFirst.getName());
+		System.out.println(illnessCatSecond.getName());
+		System.out.println(illnessCatThird.getName());
+		
+		
+		ArrayList<Illness> foundIllnesses = new ArrayList<>();
+		
+		if (!illnessCatThird.getName().equals("illnessThirdCat")){
+			foundIllnesses.add(findByName(illnessCatThird.getName()));
+		}
+		
+		
+		if (!illnessCatSecond.getName().equals("illnessSecondCat")){
+			foundIllnesses.add(findByName(illnessCatSecond.getName()));
+		}
+
+		if (!illnessCatFirst.getName().equals("illnessFirstCat")){
+			foundIllnesses.add(findByName(illnessCatFirst.getName()));
+		}
+		
+		return foundIllnesses;
+
+	}
     
-    public void insertDiagnosesInSession(KieSession kieSession, Long patientId){
+    public ArrayList<Illness> getAllIllness(ArrayList<Symptom> symptoms, Long patientId) {
+		KieSession kieSession = kieContainer.newKieSession();
+
+		ArrayList<Illness> illnesses = findAll();
+		addSymptomsAndIllnesses(kieSession, symptoms, patientId, illnesses);
+		insertDiagnosesInSession(kieSession, patientId);
+		
+		
+		kieSession.getAgenda().getAgendaGroup("set-symptom-num").setFocus();
+		
+		kieSession.fireAllRules();
+
+		
+		ArrayList<Illness> new_illnesses = new ArrayList<>();
+		
+		for (Illness illness: illnesses){
+			if (illness.getSymptomsFound() > 0){
+				new_illnesses.add(illness);
+			}
+		}
+		
+		Collections.sort(new_illnesses, symptomsFoundComparator);
+		
+		return new_illnesses;
+
+	}
+    
+   
+	private void addSymptomsAndIllnesses(KieSession kieSession, ArrayList<Symptom> symptoms, Long patientId,
+			ArrayList<Illness> illnesses) {
+
+		kieSession.setGlobal("pId", patientId);
+		
+		for (Symptom symptom : symptoms) {
+			kieSession.insert(symptom);
+		}
+		
+		for (Illness illness : illnesses) {
+			illness.setSymptomsFound(0);
+			illness.setSpecificSymptomsFound(0);
+			illness.setSymptomTermsFound(new ArrayList<Symptom.Term>());
+			if (!illness.getSymptoms().isEmpty()){
+				for (Symptom s: illness.getSymptoms()){
+					//System.out.println("Ubacujem term simptoma u sesiju: " + s.getTerm().toString());
+					illness.getSymptomsTerms().add(s.getTerm());
+				}
+				//System.out.println("Ubacujem bolest u sesiju: " + illness.getName());
+				kieSession.insert(illness);
+			}else{
+				//System.out.println("Ubacujem bolest u sesiju: " + illness.getName());
+				System.out.println("ubacujem bolest " + illness.getName() + " kat: " + illness.getCategory().toString());
+				kieSession.insert(illness);
+			}
+			
+		}
+
+	}
+
+	public void insertDiagnosesInSession(KieSession kieSession, Long patientId){
     	ArrayList<Diagnose> diagnoses = diagnoseService.findByPatientId(patientId);
         
         if (!diagnoses.isEmpty()){
         	for (Diagnose d: diagnoses){
         		kieSession.insert(d);
-        		System.out.println("Ubacujem u sesiju dijagnozu: " + d.getIllnessName());
+        		//System.out.println("Ubacujem u sesiju dijagnozu: " + d.getIllnessName());
         		ArrayList<DiagnoseMedicament> diagnoseMedicaments = diagnoseMedicamentService.findByDiagnoseId(d.getId());
         		if (!diagnoseMedicaments.isEmpty()){
         			for (DiagnoseMedicament dm: diagnoseMedicaments){
         				if (dm.getMedicamentCategory() != null && dm.getMedicamentCategory().equals("ANTIBIOTICS")){
         					kieSession.insert(dm);
-        					System.out.println("Ubacujem u sesiju dijagnozu lijek: " + dm.getMedicamentName());
+        					//System.out.println("Ubacujem u sesiju dijagnozu lijek: " + dm.getMedicamentName());
         				}
         			}
         		}
@@ -252,15 +224,13 @@ public class IllnessService {
         				if (ds.getSymptomTerm().equals("TEMP_OVER_38") || ds.getSymptomTerm().equals("TEMP_BETWEEN_40_AND_41") ||
         						ds.getSymptomTerm().equals("HIGH_PRESSURE")){
         					kieSession.insert(ds);
-        					System.out.println("Ubacujem u sesiju dijagnozu simptom: " + ds.getSymptomTerm());
+        					//System.out.println("Ubacujem u sesiju dijagnozu simptom: " + ds.getSymptomTerm());
         				}
         			}
         		}
         	}
         }
     }
-    
-   
     
     public String setDiagnose(Record record){
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) record.getIllness().getSymptoms();
@@ -359,6 +329,8 @@ public class IllnessService {
         			DiagnoseSymptom ds = new DiagnoseSymptom();
             		ds.setDiagnoseId(diagnose.getId());
             		ds.setSymptomTerm(s.getTerm().toString());
+            		ds.setDate(diagnose.getDate());
+            		ds.setPatientId(diagnose.getPatientId());
             		ds = diagnoseSymptomService.addDiagnoseSymtpom(ds);
         		}
         		
@@ -380,12 +352,10 @@ public class IllnessService {
         	}
         }
         
-        
-    	
     	
         return allergies;
     }
-    
+
     public ArrayList<Symptom> getIllnessSymptoms(Illness illness){
     	ArrayList<Symptom> symptoms = new ArrayList<>();
     	
@@ -431,6 +401,7 @@ public class IllnessService {
     	return newSymptoms;
     }
 
+    
     public Illness addIllness(Illness illness){
     	return illnessRepository.save(illness);
     }
@@ -450,13 +421,14 @@ public class IllnessService {
     public ArrayList<Illness> findAll(){
     	return illnessRepository.findAll();
     }
+   
     
-    Comparator<Illness> symptomsSizeComparator = new Comparator<Illness>()
+    Comparator<Illness> symptomsFoundComparator = new Comparator<Illness>()
     {
         @Override
         public int compare(Illness i1, Illness i2)
         {
-            return Integer.compare(i2.getSymptoms().size(), i1.getSymptoms().size());
+            return Integer.compare(i2.getSymptomsFound(), i1.getSymptomsFound());
         }
     };
     

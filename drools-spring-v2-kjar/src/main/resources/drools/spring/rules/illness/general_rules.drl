@@ -1,0 +1,157 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.Symptom;
+import drools.spring.example.model.Illness;
+import drools.spring.example.model.Diagnose;
+import drools.spring.example.model.User;
+import java.util.List;
+
+import java.util.Date;
+import java.util.Calendar;
+
+global Long pId;
+
+rule "Check symptoms for all illnesses and set number of nonspecific symptoms"
+	salience 100
+	agenda-group "set-symptom-num"
+	lock-on-active true
+    when
+    	 $illness : Illness( $sym : symptomsTerms )
+    	 
+    	 $list: List() from collect(Symptom( ))
+    	 
+    	 $resList: List(size > 0) from accumulate(
+        	$s1 : Symptom( 
+        		term memberOf $sym,
+        		term != Symptom.Term.SURGERY_RECOVERY
+        	 ) from $list,
+        	 init(List<Symptom.Term> list1 = new ArrayList<Symptom.Term>();),
+             action(list1.add($s1.getTerm());),
+             result(list1)
+        )
+        
+    then
+    	$illness.setSymptomsFound($resList.size());
+    	$illness.setSymptomTermsFound($resList);
+    	update($illness);
+
+end
+
+
+rule "All symptoms are found - Category FIRST"
+	salience 100
+	agenda-group "set-illness"
+	no-loop
+    when
+    	 $illness : Illness(symptoms.size() == symptomsFound && $in: name && category == Illness.Category.FIRST)
+    	 $one_found : Illness( name == "illnessFirstCat" )
+    then
+    	modify($one_found){ setName($in); }
+end
+
+rule "All symptoms are found - Category SECOND"
+	salience 100
+	agenda-group "set-illness"
+	no-loop
+    when
+    	 $illness : Illness(symptoms.size() == symptomsFound && $in: name && category == Illness.Category.SECOND)
+    	 $one_found : Illness( name == "illnessSecondCat" )
+    then
+    	modify($one_found){ setName($in); }
+end
+
+
+rule "All symptoms are found - Category THIRD"
+	salience 100
+	agenda-group "set-illness"
+	no-loop
+    when
+    	 $illness : Illness(symptoms.size() == symptomsFound && $in: name && category == Illness.Category.THIRD)
+    	 $one_found : Illness( name == "illnessThirdCat" )
+    then
+    	modify($one_found){ setName($in); }
+end
+
+rule "Seven symptoms are found - category FIRST"
+	agenda-group "set-illness"
+	salience 50
+	no-loop
+    when
+    	 $one_found : Illness( name == "illnessFirstCat" )
+    	 
+    	 $illness: Illness(  $in: name && category == Illness.Category.FIRST && symptomsFound >= 7 )
+    then
+    	modify($one_found){ setName($in); }
+
+end
+
+rule "Six symptoms are found - category FIRST"
+	agenda-group "set-illness"
+	salience 40
+	no-loop
+    when
+    	 $one_found : Illness( name == "illnessFirstCat" )
+    	 
+    	 $illness: Illness(  $in: name && category == Illness.Category.FIRST && symptomsFound >= 6 )
+    then
+    	modify($one_found){ setName($in); }
+
+end
+
+
+rule "Five symptoms are found - category FIRST"
+	agenda-group "set-illness"
+	salience 30
+	no-loop
+    when
+    	 $one_found : Illness( name == "illnessFirstCat" )
+    	 
+    	 $illness: Illness(  $in: name && category == Illness.Category.FIRST && symptomsFound >= 5 )
+    then
+    	modify($one_found){ setName($in); }
+
+end
+
+rule "Four symptoms are found - category FIRST"
+	agenda-group "set-illness"
+	salience 20
+	no-loop
+    when
+    	 $one_found : Illness( name == "illnessFirstCat" )
+    	 
+    	 $illness: Illness(  $in: name && category == Illness.Category.FIRST, symptomsFound >= 4 )
+    then
+    	modify($one_found){ setName($in); }
+
+end
+
+
+rule "Category THIRD - 2 nonspecific & 1 specific symptom"
+	agenda-group "set-illness"
+	salience 90
+	no-loop
+    when
+    	 
+    	 $one_found : Illness( name == "illnessThirdCat" )
+    	 
+    	 $illness: Illness(  $in: name && category == Illness.Category.THIRD && specificSymptomsFound >= 1 &&
+    	 	 	(symptomsFound - specificSymptomsFound) >= 2)
+    then
+    	modify($one_found){ setName($in); }
+
+end
+
+
+function Date addDays(Integer days){
+	Calendar newCal = Calendar.getInstance();
+	newCal.setTime(new Date());
+	newCal.add(Calendar.DATE, days);
+	return newCal.getTime();
+}
+
+function Date addMonths(Integer months){
+	Calendar newCal = Calendar.getInstance();
+	newCal.setTime(new Date());
+	newCal.add(Calendar.MONTH, months);
+	return newCal.getTime();
+}

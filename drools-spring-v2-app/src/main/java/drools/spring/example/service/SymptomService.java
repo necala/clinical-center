@@ -35,6 +35,11 @@ public class SymptomService {
     	return symptomRepository.findByIllness(illness);
     }
     
+    public ArrayList<Symptom> findByIllnessSorted(Illness illness){
+    	return symptomRepository.findAllByIllnessOrderBySpecificsDesc(illness);
+    }
+    
+    
     
     public ArrayList<Symptom> findAll(){
     	return symptomRepository.findAll();

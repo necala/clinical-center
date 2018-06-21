@@ -2,186 +2,35 @@ package drools.spring.rules;
 
 import drools.spring.example.model.Symptom;
 import drools.spring.example.model.Illness;
-import drools.spring.example.model.User;
-import drools.spring.example.model.Patient;
-import drools.spring.example.model.Record;
 import drools.spring.example.model.Diagnose;
-import drools.spring.example.model.events.ColdOrFeverEvent;
+import drools.spring.example.model.User;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Calendar;
-
-global ArrayList<Illness> illnesses;
-global ArrayList<Illness> allSymptomIllnesses;
 global Long pId;
 
-rule "All illnesses - Sinus Infection"
-	agenda-group "all-illnesses"
-    when
-        $list: List() from collect(Symptom( ))
-       
-        $resList: List() from accumulate(
-            $sym: Symptom(
-                term == Symptom.Term.EYE_SWELLING || term == Symptom.Term.HEADACHE || term == Symptom.Term.YELLOW_SECRETION_FROM_NOSE
-                || term == Symptom.Term.SORE_THROAT || term == Symptom.Term.TEMP_OVER_38
-                || term == Symptom.Term.COUGH 
-            ) from $list,
-            init(List<Symptom> list1 = new ArrayList<Symptom>();),
-            action(list1.add($sym);),
-            result(list1)
-        )
-    then    	
-        if (!$resList.isEmpty()){
-	        Illness i = new Illness();
-	    	i.setCategory(Illness.Category.FIRST);
-	    	i.setName("Sinus Infection");
-	    	i.setSymptoms($resList);
-	    	illnesses.add(i);
-        } 
-end
 
-rule "Specific request - all illnesses - Sinus Infection"
-	agenda-group "special-request-all-illnesses"
-    when
-        $d1: Diagnose( illnessName == "Cold" || illnessName == "Fever" && patientId == pId && $d: date &&
-          new Date() < (add60Days($d)) )
-    then    	
-    	boolean addSymptom = true;
-        if (!illnesses.isEmpty()){
-        	for (Object o: illnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Sinus Infection")){
-        			for (Object o1: i.getSymptoms()){
-        				Symptom s1 = (Symptom) o1;
-        				if (s1.getTerm() == Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS){
-        					addSymptom = false;
-        					break;
-        				}
-        			}
-        			if (addSymptom){
-	        			Symptom s = new Symptom();
-					    s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
-					   	s.setSpecific(true);
-					   	s.setHelper("Suffered from cold/fever in past 60 days");
-	        			i.getSymptoms().add(s);
-	        			break;
-        			}
-        		}
-        	}
-        }else{
-        	Illness i = new Illness();
-	    	i.setCategory(Illness.Category.FIRST);
-	    	i.setName("Sinus Infection");
-	    	Symptom s = new Symptom();
-			s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
-	    	s.setSpecific(true);
-			s.setHelper("Suffered from cold/fever in past 60 days");
-	    	i.getSymptoms().add(s);
-	    	illnesses.add(i);
-        }
-end
-
-rule "One illness - Sinus Infection"
-	agenda-group "one-illness"
+rule "Pacijent suffered from Cold/Fever in last 60 days"
+	salience 50
+	agenda-group "set-symptom-num"
 	no-loop
+	lock-on-active true
     when
-        $list: List() from collect(Symptom( ))
-       
-        $resList: List() from accumulate(
-            $sym: Symptom(
-                term == Symptom.Term.EYE_SWELLING || term == Symptom.Term.HEADACHE || term == Symptom.Term.YELLOW_SECRETION_FROM_NOSE
-                || term == Symptom.Term.SORE_THROAT || term == Symptom.Term.TEMP_OVER_38
-                || term == Symptom.Term.COUGH 
-            ) from $list,
-            init(List<Symptom> list1 = new ArrayList<Symptom>();),
-            action(list1.add($sym);),
-            result(list1)
-        )
-    then   
-        if ($resList.size() == 6){
-        	Illness illness  = new Illness();
-	    	illness.setCategory(Illness.Category.FIRST);
-	    	illness.setName("Sinus Infection");
-	    	System.out.println("ovdje je nova bolest sa svim simptomima: "+ illness.getName());
-	    	illness.setSymptoms($resList);
-	    	allSymptomIllnesses.add(illness);
-        } else {
-        	if ($resList.size() >= 3){
-		        Illness i = new Illness();
-		    	i.setCategory(Illness.Category.FIRST);
-		    	i.setName("Sinus Infection");
-		    	System.out.println("ovdje je nova bolest: "+ i.getName());
-		    	i.setSymptoms($resList);
-		    	illnesses.add(i);
-	        }
-        }  	
+    	 $illness: Illness( name == "Sinus Infection" && $numOfSymptoms : symptomsFound && specificSymptomsFound == 0
+    	 		&& $sym : symptomTermsFound)
+    	 
+    	 $s: Symptom(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS not memberOf $sym)		
+    	 
+    	 $d1: Diagnose( illnessName == "Cold" || illnessName == "Fever" && patientId == pId , $d: date &&
+          $d > (addDays(-60)) )
+    	
+    then
+    	$illness.setSymptomsFound($numOfSymptoms + 1);
+    	$illness.setSpecificSymptomsFound(1);
+    	$illness.getSymptomTermsFound().add(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
+    	update($illness);
 end
 
-rule "Special request - one illness - Sinus Infection"
-	agenda-group "special-request-one-illness"
-    when
-    	$d1: Diagnose( illnessName == "Cold" || illnessName == "Fever" && patientId == pId , $d: date &&
-          new Date() < (add60Days($d)) )
-    then    	
-    	Symptom s = new Symptom();
-	    s.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
-	    s.setSpecific(true);
-		s.setHelper("Suffered from cold/fever in past 60 days");
-        if (!allSymptomIllnesses.isEmpty()){
-        	for (Object o : allSymptomIllnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Sinus Infection")){
-        			if (i.getSymptoms().size() == 6){
-        				i.getSymptoms().add(s);
-        				break;
-        			}else{
-        				allSymptomIllnesses.remove(i);
-        				break;
-        			}
-        		}
-        	}
-        }
-        boolean flag = true;
-        boolean flag2 = false;
-        boolean addSymptom = true;
-        if (!illnesses.isEmpty()){
-        	for (Object o : illnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Sinus Infection")){
-        			flag2 = true;
-        			for (Object o1: i.getSymptoms()){
-        				Symptom s1 = (Symptom) o1;
-        				if (s1.getTerm() == Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS){
-        					addSymptom = false;
-        					break;
-        				}
-        			}
-        			if (addSymptom){
-	        			i.getSymptoms().add(s);
-	        			flag = false;
-	        			break;
-        			}
-        			
-        		}
-        	}
-        }
-        if (flag && flag2){
-        	Illness i = new Illness();
-        	i.setCategory(Illness.Category.FIRST);
-			i.setName("Sinus Infection");
-			i.getSymptoms().add(s);
-			System.out.println("ovdje je nova bolest: "+ i.getName());
-			illnesses.add(i);
-        }
-end
-
-function Date add60Days(Date date){
-	Calendar newCal = Calendar.getInstance();
-	newCal.setTime(date);
-	newCal.add(Calendar.DATE, 60);
-	return newCal.getTime();
-}
 
 rule "Sinus Infection - Symptoms"
 	no-loop 

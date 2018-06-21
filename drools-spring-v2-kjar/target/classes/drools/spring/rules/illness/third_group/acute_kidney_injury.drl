@@ -6,240 +6,76 @@ import drools.spring.example.model.DiagnoseMedicament;
 import drools.spring.example.model.DiagnoseSymptom;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.Medicament;
-import drools.spring.example.model.events.IllnessWithHighTempEvent;
-import drools.spring.example.model.events.PatientUsesAntibioticsEvent;
 import java.util.ArrayList;
 
 import java.util.Date;
-import java.util.Calendar;
-
-global ArrayList<Illness> illnesses;
-global ArrayList<Illness> allSymptomIllnesses;
 global Long pId;
 
 
-rule "All illnesses - Acute Kidney Injury"
-	agenda-group "all-illnesses"
+rule "Patient diagnosed with illness which has symptom high temp in last 14 days"
+	salience 50
+	agenda-group "set-symptom-num"
+	no-loop
+	lock-on-active true
     when
-        $list: List() from collect(Symptom( ))
-       
-        $resList: List() from accumulate(
-            $sym: Symptom(
-                term == Symptom.Term.FATIGUE || term == Symptom.Term.CHOKING 
-                || term == Symptom.Term.LEGS_AND_JOINTS_SWELLING || term == Symptom.Term.DIARRHEA
-                || term == Symptom.Term.SURGERY_RECOVERY
-            ) from $list,
-            init(List<Symptom> list1 = new ArrayList<Symptom>();),
-            action(list1.add($sym);),
-            result(list1)
-        )
-    then    	
-        if (!$resList.isEmpty()){
-	        Illness i = new Illness();
-	    	i.setCategory(Illness.Category.THIRD);
-	    	i.setName("Acute Kidney Injury");
-	    	i.setSymptoms($resList);
-	    	illnesses.add(i);
-        } 
-end
-
-rule "Patient diagnosed with illness which has symptom high temp - All ilnesses"
-	agenda-group "special-request-all-illnesses"
-	no-loop 
-    when
-        $temp: Diagnose($d: date && illnessName == "Fever" || illnessName == "Sinus Infection" || 
+    	 
+    	 $illness: Illness( name == "Acute Kidney Injury" && $numOfSymptoms : symptomsFound &&
+    	  	$numOfSpecSymptoms: specificSymptomsFound && $sym : symptomTermsFound  )
+    	 
+    	 $s: Symptom(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS not memberOf $sym)
+    	 
+    	 $d: Diagnose($date: date && $in: illnessName && illnessName == "Fever" || illnessName == "Sinus Infection" || 
         								 illnessName == "Tonsil Inflamation" && patientId == pId &&
-        								 $d >= (removeDays(new Date(), -14)) && $d <= (new Date()) )
-    then    
-    	boolean flag = true;
-    	boolean addSymptom = true;	
-    	boolean flag2 = false;
-        if (!illnesses.isEmpty()){
-        	for (Object o: illnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Acute Kidney Injury")){
-        			flag2 = true;
-        			for (Object o1: i.getSymptoms()){
-        				Symptom s1 = (Symptom) o1;
-        				if (s1.getTerm() == Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS){
-        					addSymptom = false;
-        					break;
-        				}
-        			}
-        			if (addSymptom){
-	        			Symptom s = new Symptom();
-					    s.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
-	    				s.setSpecific(true);
-	    				s.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
-	        			i.getSymptoms().add(s);
-	        			flag = false;
-	        			break;
-        			}
-        		}
-        	}
-        }
-		if (flag && !flag2){
-        	Illness i = new Illness();
-	    	i.setCategory(Illness.Category.THIRD);
-	    	i.setName("Acute Kidney Injury");
-	    	Symptom s = new Symptom();
-			s.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
-    		s.setSpecific(true);
-    		s.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
-	    	i.getSymptoms().add(s);
-	    	illnesses.add(i);
-        }
+        								 $date >= (addDays(-14)) )
+        								 
+    then
+    	$illness.setSymptomsFound($numOfSymptoms + 1);
+    	$illness.getSymptomTermsFound().add(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
+    	$illness.setSpecificSymptomsFound($numOfSpecSymptoms + 1);
+    	update($illness);
 end
 
-rule "Patient uses antibiotics"
-	agenda-group "special-request-all-illnesses"
-	no-loop 
+
+rule "Patient recovers from surgery"
+	salience 50
+	agenda-group "set-symptom-num"
+	no-loop
+	lock-on-active true
     when
-    	$d1 : Diagnose( $idD: id && $d: date && $d >= (removeDays(new Date(), -21)) && $d <= (new Date()) )
-    	$diagnose: DiagnoseMedicament( diagnoseId == $idD && medicamentCategory == "ANTIBIOTICS" )
-    then   
-    	boolean flag = true;
-    	boolean addSymptom = true;
-    	boolean flag2 = false;	 	
-        if (!illnesses.isEmpty()){
-        	for (Object o: illnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Acute Kidney Injury")){
-        			flag2 = true;
-        			for (Object o1: i.getSymptoms()){
-        				Symptom s1 = (Symptom) o1;
-        				if (s1.getTerm() == Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS){
-        					addSymptom = false;
-        					break;
-        				}
-        			}
-        			if (addSymptom){
-	        			Symptom s = new Symptom();
-					    s.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
-				    	s.setSpecific(true);
-				    	s.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
-	        			i.getSymptoms().add(s);
-	        			flag = false;
-	        			break;
-	        		}
-        		}
-        	}
-        }
-		if (flag && !flag2){
-        	Illness i = new Illness();
-	    	i.setCategory(Illness.Category.THIRD);
-	    	i.setName("Acute Kidney Injury");
-	    	Symptom s = new Symptom();
-			s.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
-			s.setSpecific(true);
-	    	s.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
-	    	illnesses.add(i);
-        }
+    	 
+    	 $illness: Illness( name == "Acute Kidney Injury" && $numOfSymptoms : symptomsFound &&
+    	  	$numOfSpecSymptoms: specificSymptomsFound )
+    	 
+    	 $symptom: Symptom( term == Symptom.Term.SURGERY_RECOVERY )
+    	 
+    then
+    	$illness.setSymptomsFound($numOfSymptoms + 1);
+    	$illness.setSpecificSymptomsFound($numOfSpecSymptoms + 1);
+    	update($illness);
 end
 
-rule "One illness Acute Kindney Injury"
-	agenda-group "one-illness"
+rule "Patient used antibiotics in last 21 days"
+	salience 50
+	agenda-group "set-symptom-num"
+	no-loop
+	lock-on-active true
     when
-        $list: List() from collect(Symptom( ))
-       
-        $resList: List() from accumulate(
-            $sym: Symptom(
-                term == Symptom.Term.FATIGUE || term == Symptom.Term.CHOKING 
-                || term == Symptom.Term.LEGS_AND_JOINTS_SWELLING || term == Symptom.Term.DIARRHEA
-            ) from $list,
-            init(List<Symptom> list1 = new ArrayList<Symptom>();),
-            action(list1.add($sym);),
-            result(list1)
-        )
-    then    	
-        if (!$resList.isEmpty() && $resList.size() >= 2){
-        	
-        	Illness i = new Illness();
-		   	i.setCategory(Illness.Category.THIRD);
-		   	i.setName("Acute Kidney Injury");
-		   	i.setSymptoms($resList);
-		   	allSymptomIllnesses.add(i);
-		    
-        } 
+    	 
+    	 $illness: Illness( name == "Acute Kidney Injury" && $numOfSymptoms : symptomsFound &&
+    	  	$numOfSpecSymptoms: specificSymptomsFound && $sym : symptomTermsFound )
+    	  	
+    	 $s: Symptom(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS not memberOf $sym)
+    	 
+    	 $d1 : Diagnose( $idD: id && $d: date && $d >= (addDays(-21)) && patientId == pId)
+    	 $diagnoseMed: DiagnoseMedicament( diagnoseId == $idD && medicamentCategory == "ANTIBIOTICS" )
+    	
+    then
+    	$illness.setSymptomsFound($numOfSymptoms + 1);
+    	$illness.getSymptomTermsFound().add(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
+    	$illness.setSpecificSymptomsFound($numOfSpecSymptoms + 1);
+    	update($illness);
 end
 
-
-rule "User recovers from surgery - One ilnesses"
-	agenda-group "special-request-one-illness"
-    when
-        $symptom: Symptom( term == Symptom.Term.SURGERY_RECOVERY)
-    then    	
-        if (!allSymptomIllnesses.isEmpty()){
-        	for (Object o : allSymptomIllnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Acute Kidney Injury")){
-        			if (i.getSymptoms().size() >= 2){
-        				Symptom s = new Symptom();
-						s.setTerm(Symptom.Term.SURGERY_RECOVERY);
-				    	s.setSpecific(true);
-				   		s.setHelper("Surgery recovery");
-	        			i.getSymptoms().add(s);
-	        			break;
-        			}
-        		}
-        	}
-        }
-end
-
-
-rule "Patient diagnosed with illness which has symptom high temp - One ilnesses"
-	agenda-group "special-request-one-illness"
-    when
-        $temp: Diagnose($d: date && illnessName == "Fever" || illnessName == "Sinus Infection" || 
-        								 illnessName == "Tonsil Inflamation" && patientId == pId &&
-        								 $d >= (removeDays(new Date(), -14)) && $d <= (new Date()) )
-    then    	
-        if (!allSymptomIllnesses.isEmpty()){
-        	for (Object o : allSymptomIllnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Acute Kidney Injury")){
-        			if (i.getSymptoms().size() >= 2){
-        				Symptom s = new Symptom();
-						s.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
-				    	s.setSpecific(true);
-				    	s.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
-	        			i.getSymptoms().add(s);
-	        			break;
-        			}
-        		}
-        	}
-        }
-end
-
-rule "Patient used antibiotics - One ilnesses"
-	agenda-group "special-request-one-illness"
-    when
-        $d1 : Diagnose( $idD: id && $d: date && $d >= (removeDays(new Date(), -21)) && $d <= (new Date()) )
-    	$diagnose: DiagnoseMedicament( diagnoseId == $idD && medicamentCategory == "ANTIBIOTICS" )
-    then    	
-        if (!allSymptomIllnesses.isEmpty()){
-        	for (Object o : allSymptomIllnesses){
-        		Illness i = (Illness) o;
-        		if (i.getName().equals("Acute Kidney Injury")){
-        			if (i.getSymptoms().size() >= 2){
-        				Symptom s = new Symptom();
-						s.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
-				    	s.setSpecific(true);
-				    	s.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
-	        			i.getSymptoms().add(s);
-	        			break;
-        			}
-        		}
-        	}
-        }
-end
-
-function Date removeDays(Date date, Integer days){
-	Calendar newCal = Calendar.getInstance();
-	newCal.setTime(date);
-	newCal.add(Calendar.DATE, days);
-	return newCal.getTime();
-}
 
 rule "Acute Kidney Injury - Symptoms"
 	no-loop 

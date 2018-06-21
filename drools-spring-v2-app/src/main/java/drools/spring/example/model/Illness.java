@@ -1,5 +1,6 @@
 package drools.spring.example.model;
 
+import javax.persistence.Transient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,18 @@ public class Illness implements Serializable {
 	private Category category;
 	@OneToMany(mappedBy="illness", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Symptom> symptoms = new ArrayList<Symptom>();
+	
+	@Transient
+	private Integer symptomsFound;
+	
+	@Transient
+	private Integer specificSymptomsFound;
+	
+	@Transient
+	private List<Symptom.Term> symptomsTerms = new ArrayList<>();
+	
+	@Transient
+	private List<Symptom.Term> symptomTermsFound = new ArrayList<>();
 	
 	public Illness() {
 		this.symptoms = new ArrayList<Symptom>();
@@ -67,4 +80,38 @@ public class Illness implements Serializable {
 		this.symptoms = symptoms;
 	}
 
+	public Integer getSymptomsFound() {
+		return symptomsFound;
+	}
+
+	public void setSymptomsFound(Integer symptomsFound) {
+		this.symptomsFound = symptomsFound;
+	}
+
+	public Integer getSpecificSymptomsFound() {
+		return specificSymptomsFound;
+	}
+
+	public void setSpecificSymptomsFound(Integer specificSymptomsFound) {
+		this.specificSymptomsFound = specificSymptomsFound;
+	}
+
+	public List<Symptom.Term> getSymptomsTerms() {
+		return symptomsTerms;
+	}
+
+	public void setSymptomsTerms(List<Symptom.Term> symptomsTerms) {
+		this.symptomsTerms = symptomsTerms;
+	}
+
+	public List<Symptom.Term> getSymptomTermsFound() {
+		return symptomTermsFound;
+	}
+
+	public void setSymptomTermsFound(List<Symptom.Term> symptomTermsFound) {
+		this.symptomTermsFound = symptomTermsFound;
+	}
+	
+	
+	
 }

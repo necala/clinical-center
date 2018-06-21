@@ -164,7 +164,7 @@ private static Logger log = LoggerFactory.getLogger(SymptomController.class);
 		if (illness == null){
 			return new ResponseEntity<>( HttpStatus.BAD_REQUEST);
 		}
-		List<Symptom> symptoms =  symptomService.findByIllness(illness);
+		List<Symptom> symptoms =  symptomService.findByIllnessSorted(illness);
 		
 		for (Symptom s: symptoms){
 			s.setIllness(null);

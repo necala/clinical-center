@@ -111,10 +111,8 @@ export class DiagnoseIllnessComponent implements OnInit {
   }
 
   getAll() {
-    const i: Illness = new Illness();
-    i.symptoms = this.symptoms;
     this.diagnostic = false;
-    this.illnessService.allIllnesses(i, this.patient.id)
+    this.illnessService.allIllnesses(this.symptoms, this.patient.id)
       .then( res => {
         this.allIllnesses = res;
         this.display = 'block';
@@ -139,12 +137,10 @@ export class DiagnoseIllnessComponent implements OnInit {
   }
 
   getOne() {
-    const i: Illness = new Illness();
-    i.symptoms = this.symptoms;
     this.diagnostic = false;
-    this.illnessService.oneIllness(i, this.patient.id)
+    this.illnessService.oneIllness(this.symptoms, this.patient.id)
       .then( res => {
-        this.allIllnesses = res
+        this.allIllnesses = res;
         this.display = 'block';
       })
       .catch(
