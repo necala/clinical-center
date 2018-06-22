@@ -21,7 +21,6 @@ rule "Check if patient is allergic to medicament"
         $medicament: Medicament( $medName: name )
     	$allergy: MedicamentAllergy( patientId == idPatient && medicamentName == $medName )
     then    	
-    	System.out.print("CAOS NASLA SAM ALERGIJU NA LIJEK");
     	allergics.add($medicament);
 end
 
@@ -31,7 +30,6 @@ rule "Check if patient is allergic to ingridient"
         $ingridient: Ingridient( $ingrName: name )
     	$allergy: IngridientAllergy( patientId == idPatient && ingridientName == $ingrName )
     then   
-    	System.out.print("CAOS NASLA SAM ALERGIJU NA SASTOJAK"); 	
     	allergicsIngr.add($ingridient);
 end
 

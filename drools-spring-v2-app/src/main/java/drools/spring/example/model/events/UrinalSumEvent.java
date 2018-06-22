@@ -9,25 +9,25 @@ import org.kie.api.definition.type.Timestamp;
 
 @Role(Role.Type.EVENT)
 @Timestamp("executionTime")
-@Expires("60d")
-public class ColdOrFeverEvent implements Serializable {
-	
+@Expires("12h")
+public class UrinalSumEvent implements Serializable {
+
 	private static final long serialVersionUID = 1L;
 	
 	private Date executionTime;
-    private String patientId;
-    private String illnessName;
-    
-	public ColdOrFeverEvent() {
+	private Long patientId;
+	private Integer amount;
+	
+	public UrinalSumEvent() {
 		super();
 		this.executionTime = new Date();
 	}
 
-	public ColdOrFeverEvent(String patientId, String illnessName) {
+	public UrinalSumEvent(Long patientId, Integer amount) {
 		super();
 		this.executionTime = new Date();
 		this.patientId = patientId;
-		this.illnessName = illnessName;
+		this.amount = amount;
 	}
 
 	public Date getExecutionTime() {
@@ -38,26 +38,23 @@ public class ColdOrFeverEvent implements Serializable {
 		this.executionTime = executionTime;
 	}
 
-	public String getPatientId() {
+	public Long getPatientId() {
 		return patientId;
 	}
 
-	public void setPatientId(String patientId) {
+	public void setPatientId(Long patientId) {
 		this.patientId = patientId;
 	}
 
-	public String getIllnessName() {
-		return illnessName;
+	public Integer getAmount() {
+		return amount;
 	}
 
-	public void setIllnessName(String illnessName) {
-		this.illnessName = illnessName;
-	}
-
-	@Override
-	public String toString() {
-		return "Date: " + this.executionTime + " : illness name: " + this.illnessName + " patient ID: " + this.patientId;
+	public void setAmount(Integer amount) {
+		this.amount = amount;
 	}
 	
 	
+	
+
 }

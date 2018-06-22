@@ -1,10 +1,19 @@
 package drools.spring.example.service;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.drools.core.ClassObjectFilter;
+import org.kie.api.KieBase;
+import org.kie.api.KieBaseConfiguration;
+import org.kie.api.KieServices;
+import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +23,7 @@ import drools.spring.example.model.Diagnose;
 import drools.spring.example.model.DiagnoseMedicament;
 import drools.spring.example.model.DiagnoseSymptom;
 import drools.spring.example.model.Illness;
+import drools.spring.example.model.MonitoringIssue;
 import drools.spring.example.model.Report;
 import drools.spring.example.model.Symptom;
 
@@ -42,41 +52,45 @@ public class ReportService {
 
 	public ArrayList<Report> getReport(){
 		
-		ArrayList<Report> reports = new ArrayList<>();
-		
-		KieSession kieSession = this.kieContainer.newKieSession();
+		KieServices ks = KieServices.Factory.get();
+		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+		kbconf.setOption(EventProcessingOption.STREAM);
+		KieBase kbase = kieContainer.newKieBase(kbconf);
+
+		KieSession kieSession = kbase.newKieSession();
 		
 		addDiagnosesToSession(kieSession);
 		
-		kieSession.setGlobal("reports", reports);
+		//kieSession.setGlobal("reports", reports);
 		
 		kieSession.getAgenda().getAgendaGroup("reports").setFocus();
         
         kieSession.fireAllRules();
         
-        reports = (ArrayList<Report>) kieSession.getGlobal("reports");
+        Collection<Report> reportsSession = (Collection<Report>) kieSession.getObjects(new ClassObjectFilter(Report.class));
+	
+        Iterator<Report> iter = reportsSession.iterator();
         
         ArrayList<Report> new_report = new ArrayList<>();
         
-        if (!reports.isEmpty()){
-        	for (Report report:reports){
+        while (iter.hasNext()){
+        	Report report = iter.next();
+        	boolean flag = true;
+        	if (!new_report.isEmpty()){
+       			for (Report r2: new_report){
+            		if (r2.getCategory().equals(report.getCategory()) && r2.getPatient().getId() == report.getPatient().getId()
+            				&& r2.getHelper().equals(report.getHelper())){
+            			flag = false;
+           				break;
+           			}
+           		}
+       		}
+    		if (flag){
+   				new_report.add(report);
+   			}
         		
-        		boolean flag = true;
-        		if (!new_report.isEmpty()){
-        			for (Report r2: new_report){
-            			if (r2.getCategory().equals(report.getCategory()) && r2.getPatient().getId() == report.getPatient().getId()
-            					&& r2.getHelper().equals(report.getHelper())){
-            				flag = false;
-            				break;
-            			}
-            		}
-        		}
-    			if (flag){
-    				new_report.add(report);
-    			}
-        		
-        	}
         }
+        
         
         
         if (!new_report.isEmpty()){

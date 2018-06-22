@@ -4,21 +4,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
+import org.kie.api.KieBase;
+import org.kie.api.KieBaseConfiguration;
+import org.kie.api.KieServices;
+import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
-import org.kie.api.runtime.rule.QueryResults;
-import org.kie.api.runtime.rule.QueryResultsRow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map.Entry;
 import drools.spring.example.model.Illness;
 import drools.spring.example.model.Ingridient;
 import drools.spring.example.model.IngridientAllergy;
@@ -31,10 +29,6 @@ import drools.spring.example.model.User;
 import drools.spring.example.model.Medicament;
 import drools.spring.example.model.MedicamentAllergy;
 import drools.spring.example.model.Patient;
-import drools.spring.example.model.events.ColdOrFeverEvent;
-import drools.spring.example.model.events.HighPressureEvent;
-import drools.spring.example.model.events.IllnessWithHighTempEvent;
-import drools.spring.example.model.events.PatientUsesAntibioticsEvent;
 import drools.spring.example.repository.IllnessRepository;
 
 @Service
@@ -82,8 +76,13 @@ public class IllnessService {
     
     
     public ArrayList<Illness> getOneIllness(ArrayList<Symptom> symptoms, Long patientId) {
-		KieSession kieSession = kieContainer.newKieSession();
+    	KieServices ks = KieServices.Factory.get();
+		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+		kbconf.setOption(EventProcessingOption.STREAM);
+		KieBase kbase = kieContainer.newKieBase(kbconf);
 
+		KieSession kieSession = kbase.newKieSession();
+		
 		ArrayList<Illness> illnesses = findAll();
 		addSymptomsAndIllnesses(kieSession, symptoms, patientId, illnesses);
 		insertDiagnosesInSession(kieSession, patientId);
@@ -144,7 +143,12 @@ public class IllnessService {
 	}
     
     public ArrayList<Illness> getAllIllness(ArrayList<Symptom> symptoms, Long patientId) {
-		KieSession kieSession = kieContainer.newKieSession();
+    	KieServices ks = KieServices.Factory.get();
+		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+		kbconf.setOption(EventProcessingOption.STREAM);
+		KieBase kbase = kieContainer.newKieBase(kbconf);
+
+		KieSession kieSession = kbase.newKieSession();
 
 		ArrayList<Illness> illnesses = findAll();
 		addSymptomsAndIllnesses(kieSession, symptoms, patientId, illnesses);
@@ -242,7 +246,12 @@ public class IllnessService {
     	
     	String allergies = "Patient allergic to: ";
     	
-    	KieSession kieSession = kieContainer.newKieSession();
+    	KieServices ks = KieServices.Factory.get();
+		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+		kbconf.setOption(EventProcessingOption.STREAM);
+		KieBase kbase = kieContainer.newKieBase(kbconf);
+
+		KieSession kieSession = kbase.newKieSession();
 
 
         kieSession.setGlobal("idPatient", record.getPatient().getId());
@@ -359,7 +368,12 @@ public class IllnessService {
     public ArrayList<Symptom> getIllnessSymptoms(Illness illness){
     	ArrayList<Symptom> symptoms = new ArrayList<>();
     	
-    	KieSession kieSession = kieContainer.newKieSession();
+    	KieServices ks = KieServices.Factory.get();
+		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+		kbconf.setOption(EventProcessingOption.STREAM);
+		KieBase kbase = kieContainer.newKieBase(kbconf);
+
+		KieSession kieSession = kbase.newKieSession();
     	kieSession.insert(illness);
     	
         kieSession.getAgenda().getAgendaGroup("symptoms").setFocus();

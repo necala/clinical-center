@@ -1,25 +1,14 @@
 package drools.spring.example.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.kie.api.runtime.KieContainer;
-import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import drools.spring.example.model.Illness;
-import drools.spring.example.model.Ingridient;
 import drools.spring.example.model.Medicament;
-import drools.spring.example.model.Patient;
-import drools.spring.example.model.Symptom;
-import drools.spring.example.model.User;
-import drools.spring.example.model.events.HighPressureEvent;
 import drools.spring.example.repository.MedicamentRepository;
-import drools.spring.example.repository.UserRepository;
 
 @Service
 public class MedicamentService {

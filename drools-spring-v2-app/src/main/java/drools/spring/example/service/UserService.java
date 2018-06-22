@@ -1,15 +1,26 @@
 package drools.spring.example.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
+import org.drools.core.ClassObjectFilter;
+import org.drools.core.ClockType;
+import org.kie.api.KieBase;
+import org.kie.api.KieBaseConfiguration;
+import org.kie.api.KieServices;
+import org.kie.api.conf.EventProcessingOption;
 import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.KieSessionConfiguration;
+import org.kie.api.runtime.conf.ClockTypeOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import drools.spring.example.model.MonitoringIssue;
 import drools.spring.example.model.User;
+import drools.spring.example.model.events.OxygenLevelEvent;
 import drools.spring.example.repository.UserRepository;
 
 
@@ -22,21 +33,17 @@ public class UserService {
 	private static Logger log = LoggerFactory.getLogger(UserService.class);
 	
 	private final KieContainer kieContainer;
-	   
+	
     @Autowired
     public UserService(KieContainer kieContainer) {
         //log.info("Initialising a new example session.");
         this.kieContainer = kieContainer;
-        this.userRepository = userRepository;
     }
 
     public boolean login(String username, String password){
     	User user = getByUsername(username);
     	if (user != null){
     		if (user.getPassword().equals(password)){
-    			
-    			KieSession kieSession = kieContainer.newKieSession();
-    			kieSession.insert(user);
     			return true;
     		}
     	}
@@ -63,4 +70,5 @@ public class UserService {
     public ArrayList<User> findAllDoctors(){
     	return userRepository.findByCategory(User.Category.DOCTOR);
     }
+    
 }

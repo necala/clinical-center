@@ -1,0 +1,86 @@
+package drools.spring.rules;
+
+import drools.spring.example.model.events.HeartBeatEvent;
+import drools.spring.example.model.events.OxygenLevelEvent;
+import drools.spring.example.model.events.UrinalSumEvent;
+import drools.spring.example.model.MonitoringIssue;
+import drools.spring.example.model.Diagnose;
+import drools.spring.example.model.Patient;
+
+rule "Patient has problems with oxygen!"
+	agenda-group "oxygen-event"
+    when
+    	OxygenLevelEvent( $level: level, level < 70, $pId: patientId )
+        not (
+	        OxygenLevelEvent( level > $level, patientId == $pId )
+	        over window:time( 15m )
+        )
+    then
+    	MonitoringIssue mi = new MonitoringIssue();
+    	mi.setIssue(MonitoringIssue.Issue.OXYGEN_ISSUE);
+    	mi.setPatientId($pId);
+        insert(mi);
+        drools.halt();
+end
+
+
+rule "Patient had more than 25 heartbeats in last 10 seconds!"
+	agenda-group "heartbeat-event"
+    when
+        $hb : HeartBeatEvent( $pId : patientId )
+        
+        Number(intValue >= 25) from accumulate(
+        	$hb1 : HeartBeatEvent ( 
+        		this != $hb,
+        		patientId == $pId,
+        		this meets[10s] $hb
+        	),
+        	count($hb1)
+        )
+        
+    then
+        MonitoringIssue mi = new MonitoringIssue();
+    	mi.setIssue(MonitoringIssue.Issue.ACCELERATED_HEARTBEAT);
+		mi.setPatientId($pId);
+        insert(mi);
+        drools.halt();
+end
+
+rule "Patient needs dialysis urgently!"
+	agenda-group "dialysis-event"
+    when
+        $d: Diagnose( $pId : patientId, illnessName == "Chronic Kidney Disease" )
+        $hb : HeartBeatEvent( patientId == $pId )
+        
+        Number(intValue >= 10) from accumulate(
+        	$hb1 : HeartBeatEvent ( 
+        		this != $hb,
+        		patientId == $pId,
+        		this meets[10s] $hb
+        	),
+        	count($hb1)
+        )
+        
+        $ur: UrinalSumEvent( patientId == $pId, $sum: amount )
+        
+        Number(intValue < 100) from accumulate(
+        	$urin : UrinalSumEvent (
+        		this != $ur, 
+        		patientId == $pId,
+        		$amount: amount,
+        		this meets[12h] $ur
+        	),
+        	init(int count = $sum;),
+        	action(count += $amount;),
+        	result(count)
+        )
+        
+    then
+        MonitoringIssue mi = new MonitoringIssue();
+    	mi.setIssue(MonitoringIssue.Issue.URGENT_DIALYSIS);
+    	mi.setPatientId($pId);
+        insert(mi);
+        drools.halt();
+end
+
+

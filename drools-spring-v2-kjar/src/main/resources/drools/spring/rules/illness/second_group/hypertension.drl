@@ -5,7 +5,6 @@ import drools.spring.example.model.Illness;
 import drools.spring.example.model.User;
 import drools.spring.example.model.Diagnose;
 import drools.spring.example.model.DiagnoseSymptom;
-import drools.spring.example.model.events.HighPressureEvent;
 import java.util.List;
 import java.util.ArrayList;
 

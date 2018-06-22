@@ -17,13 +17,16 @@ rule "Patient sufferes from hypertension more than 6 months"
 	lock-on-active true
     when
     	 $illness: Illness( name == "Chronic Kidney Disease" && $numOfSymptoms : symptomsFound &&
-    	  	$numOfSpecSymptoms: specificSymptomsFound )
+    	  	$numOfSpecSymptoms: specificSymptomsFound && $sym : symptomTermsFound)
+    	 
+    	 $s: Symptom(Symptom.Term.SUFFERES_FROM_HYPERTENSION_FOR_AT_LEAST_6_MONTHS not memberOf $sym)
     	 
     	 $d: Diagnose( $date: date && illnessName == "Hypertension" &&  patientId == pId &&  $date > (addMonths(6))  )
     	
     then
     	$illness.setSymptomsFound($numOfSymptoms + 1);
     	$illness.setSpecificSymptomsFound($numOfSpecSymptoms + 1);
+    	$illness.getSymptomTermsFound().add(Symptom.Term.SUFFERES_FROM_HYPERTENSION_FOR_AT_LEAST_6_MONTHS);
     	update($illness);
     	
 end
@@ -38,11 +41,14 @@ rule "Patient sufferes from Diabetes"
     	
     	$d: Diagnose( illnessName == "Diabetes" && patientId == pId )
     	$illness: Illness( name == "Chronic Kidney Disease" && $numOfSymptoms : symptomsFound &&
-    	  	$numOfSpecSymptoms: specificSymptomsFound )
+    	  	$numOfSpecSymptoms: specificSymptomsFound && $sym : symptomTermsFound)
+    	  	
+    	$s: Symptom(Symptom.Term.SUFFERES_FROM_DIABETES not memberOf $sym)
     	
     then
     	$illness.setSymptomsFound($numOfSymptoms + 1);
     	$illness.setSpecificSymptomsFound($numOfSpecSymptoms + 1);
+    	$illness.getSymptomTermsFound().add(Symptom.Term.SUFFERES_FROM_DIABETES);
     	update($illness);
     	
 end
