@@ -9,6 +9,12 @@ export class UserService {
   public headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
   constructor(private http: HttpClient, private router: Router) { }
+  
+  public sendMsg(): Promise<{}> {
+
+    return this.http.post('/send/issue', 'Ovo je neka poruka', {responseType: 'text'})
+      .toPromise();
+  }
 
   public register(user: User): Promise<User> {
 

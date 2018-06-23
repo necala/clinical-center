@@ -54,7 +54,6 @@ public class OxygenProblemTest {
 		KieSession kSession3 = kieBase.newKieSession(kconfig3, null);
 		
 		runPositiveTest(kSession1);
-		//runNegativeTest(kSession2);
 		runRealtimePositiveTest(kSession3);
 		
 	}

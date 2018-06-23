@@ -11,7 +11,7 @@ export class LoginService {
   public headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
   constructor(private http: HttpClient) { }
-
+  
   public login(username: string, password: string): Promise<User> {
 
     const params = new HttpParams();

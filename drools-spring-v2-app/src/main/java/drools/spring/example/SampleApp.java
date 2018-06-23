@@ -1,12 +1,8 @@
 package drools.spring.example;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-
 import org.drools.core.ClassObjectFilter;
 import org.drools.core.ClockType;
 import org.kie.api.KieBase;
@@ -25,7 +21,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-
+import drools.spring.example.controller.WebSocketController;
 import drools.spring.example.model.Diagnose;
 import drools.spring.example.model.MonitoringIssue;
 import drools.spring.example.model.events.HeartBeatEvent;
@@ -47,15 +43,22 @@ public class SampleApp {
         for (String beanName : beanNames) {
             sb.append(beanName + "\n");
         }
-        //log.info(sb.toString());
-        
+        log.info(sb.toString());
         log.info("Application started");
         
         KieSession kieSession = realtimeSession();
         
-        runRealTimeHeartBeat(kieSession);
-        runRealTimeDialysis(kieSession);
-        runRealTimeOxygen(kieSession);
+        WebSocketController controller = ctx.getBean(WebSocketController.class);
+        
+        Thread.sleep(1000*60);
+        while (true){
+        	runRealTimeHeartBeat(kieSession, controller);
+            runRealTimeDialysis(kieSession, controller);
+            runRealTimeHeartBeat(kieSession, controller);
+            runRealTimeDialysis(kieSession, controller);
+            runRealTimeOxygen(kieSession, controller);
+        }
+        
 	}
 	
 	
@@ -84,9 +87,9 @@ public class SampleApp {
 		return ksession;
 	}
 	
-	public static void runRealTimeHeartBeat(KieSession realtimeSession) throws InterruptedException {
-		System.out.println("Pocinjem sa real time monitoringom heartbeat!");
-		Thread.sleep(1000*60);
+	public static void runRealTimeHeartBeat(KieSession realtimeSession, WebSocketController controller) throws InterruptedException {
+		//System.out.println("Pocinjem sa real time monitoringom heartbeat!");
+		Thread.sleep(1000*45);
 		
 		Thread t = new Thread() {
             @Override
@@ -123,13 +126,16 @@ public class SampleApp {
         		String message = "Patient: Rados Acimovic [ 12452 ] has accelerated heartbeat (more than 25 beats in 10 seconds)!";
         		
         		System.out.println(message);
+        		
+        		controller.sendMessage(message);
+        		break;
         	}
         }
 	}
 	
-	private static void runRealTimeDialysis(KieSession ksession) throws InterruptedException {
-		System.out.println("Pocinjem sa real time monitoringom dijaliza!");
-		Thread.sleep(1000*60);
+	private static void runRealTimeDialysis(KieSession ksession, WebSocketController controller) throws InterruptedException {
+		//System.out.println("Pocinjem sa real time monitoringom dijaliza!");
+		Thread.sleep(1000*45);
 		
 		Thread t = new Thread() {
             @Override
@@ -184,14 +190,15 @@ public class SampleApp {
         		String message = "Patient: Kosta Lalic [ 85052 ] needs dialysis urgently!";
         		
         		System.out.println(message);
+        		controller.sendMessage(message);
+        		break;
         	}
         }
         
     }
 	
-	public static void runRealTimeOxygen(KieSession realtimeSession) {	
-		
-		System.out.println("Pocinjem sa real time monitoringom oxygen!");
+	public static void runRealTimeOxygen(KieSession realtimeSession, WebSocketController controller) {	
+		//System.out.println("Pocinjem sa real time monitoringom oxygen!");
         Thread t = new Thread() {
             @Override
             public void run() {
@@ -212,7 +219,7 @@ public class SampleApp {
         t.setDaemon(true);
         t.start();
         try {
-            Thread.sleep(1000*60*1);
+            Thread.sleep(1000*60*15);
         } catch (InterruptedException e) {
             //do nothing
         }
@@ -227,10 +234,13 @@ public class SampleApp {
         	if (mi.getIssue().equals(MonitoringIssue.Issue.OXYGEN_ISSUE)){
         		String message = "Patient: Radmila Matic [ 5023 ] has some serious Oxygen Level issue!";
         		System.out.println(message);
+        		controller.sendMessage(message);
+        		break;
         	}
         }
         
         
         
 	}
+	
 }

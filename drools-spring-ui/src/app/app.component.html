@@ -1,3 +1,4 @@
+
 <nav class="navbar navbar-expand-md bg-dark navbar-dark fixed-top">
   <a class="navbar-brand" [routerLink]="['']">Menu</a>
   <ul class="navbar-nav">
@@ -31,5 +32,30 @@
     </li>
   </ul>
 </nav>
+
+<div [ngStyle]="{'display':displayIssue}" class="modal" id="errorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="form-control-static pull-left">
+          <button class="close" data-dismiss="modal" (click)="onModalIssueClose()">&times;</button></span>
+       	  <h3>Intensive care issue happened!</h3>
+        </div>
+        <div class="modal-body">
+          <div id="term">
+			<label for="fieldMedc" class="form-control-label">{{issueMsg}}</label>
+			
+        </div>
+          
+
+        <div class="modal-footer">
+          <button id="modalCloseButton" class="btn btn-danger" data-dismiss="modal" (click)="onModalIssueClose()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
 <br/>
 <router-outlet></router-outlet>
