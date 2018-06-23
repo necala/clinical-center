@@ -80,13 +80,8 @@ public class UserController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		
-		if (userService.getByUsername(user.getUsername())!= null){
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		
 		doctor.setFirstName(user.getFirstName());
 		doctor.setLastName(user.getLastName());
-		doctor.setUsername(user.getUsername());
 		doctor.setEmail(user.getEmail());
 		
 		doctor = userService.save(doctor);

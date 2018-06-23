@@ -30,3 +30,7 @@
   height: 300px;
 }
 
+#div2{
+  overflow:auto;
+  height: 200px;
+}

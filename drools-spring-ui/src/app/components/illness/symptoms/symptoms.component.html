@@ -15,7 +15,12 @@
 		    <tr id="tr" *ngFor="let s of symptoms">
 			
 				<td>
-			   		{{s.term}}
+					<ng-container *ngIf="s.helper != ''">
+						{{s.helper}}
+					</ng-container>
+			   		<ng-container *ngIf="s.helper == ''">
+						{{s.term}}
+					</ng-container>
 			    </td>
 			    <td>
 			    	<ng-container *ngIf="s.specific">

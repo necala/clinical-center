@@ -10,7 +10,7 @@ import java.util.Date;
 global Long pId;
 
 
-rule "Pacijent suffered from Cold/Fever in last 60 days"
+rule "Patient suffered from Cold/Fever in last 60 days"
 	salience 50
 	agenda-group "set-symptom-num"
 	no-loop
@@ -31,48 +31,3 @@ rule "Pacijent suffered from Cold/Fever in last 60 days"
     	update($illness);
 end
 
-
-rule "Sinus Infection - Symptoms"
-	no-loop 
-	agenda-group "symptoms"
-    when
-        $i: Illness( name == "Sinus Infection" )
-    then
-    	Symptom s = new Symptom();
-    	s.setTerm(Symptom.Term.EYE_SWELLING);
-    	s.setSpecific(false);
-    	s.setHelper("Eye swelling");
-    	$i.getSymptoms().add(s);
-    	Symptom s1 = new Symptom();
-    	s1.setTerm(Symptom.Term.SORE_THROAT);
-    	s1.setSpecific(false);
-    	s1.setHelper("Sore throat");
-    	$i.getSymptoms().add(s1);
-    	Symptom s2 = new Symptom();
-        s2.setTerm(Symptom.Term.HEADACHE);
-    	s2.setSpecific(false);
-    	s2.setHelper("Headache");
-    	$i.getSymptoms().add(s2);
-    	Symptom s3 = new Symptom();
-    	s3.setTerm(Symptom.Term.YELLOW_SECRETION_FROM_NOSE);
-    	s3.setSpecific(false);
-    	s3.setHelper("Yellow secretion from nose");
-    	$i.getSymptoms().add(s3);
-    	Symptom s4 = new Symptom();
-    	s4.setTerm(Symptom.Term.TEMP_OVER_38);
-    	s4.setSpecific(false);
-    	s4.setHelper("Temperature over 38");
-    	$i.getSymptoms().add(s4);
-    	Symptom s5 = new Symptom();
-    	s5.setTerm(Symptom.Term.COUGH);
-    	s5.setSpecific(false);
-    	s5.setHelper("Cough");
-    	$i.getSymptoms().add(s5);
-    	Symptom s6 = new Symptom();
-    	s6.setTerm(Symptom.Term.SUFFERED_FROM_COLD_OR_FEVER_LAST_60_DAYS);
-    	s6.setSpecific(true);
-    	s6.setHelper("Suffered from cold/fever in past 60 days");
-    	$i.getSymptoms().add(s6);
-    	update($i);
-    	
-end

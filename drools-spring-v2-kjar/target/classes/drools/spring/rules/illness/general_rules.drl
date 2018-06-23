@@ -20,7 +20,7 @@ rule "Check symptoms for all illnesses and set number of nonspecific symptoms"
     	 
     	 $list: List() from collect(Symptom( ))
     	 
-    	 $resList: List(size > 0) from accumulate(
+    	 $resList: List() from accumulate(
         	$s1 : Symptom( 
         		term memberOf $sym,
         		term != Symptom.Term.SURGERY_RECOVERY
@@ -139,6 +139,29 @@ rule "Category THIRD - 2 nonspecific & 1 specific symptom"
     then
     	modify($one_found){ setName($in); }
 
+end
+
+
+rule "Check symptoms"
+	no-loop 
+	agenda-group "symptoms"
+    when
+        $i: Illness( $name : name)
+        
+        $list: List() from collect(Symptom( ))
+    	 
+    	 $symptoms: List(size > 0) from accumulate(
+        	$s1 : Symptom( 
+        		illness.name == $name
+        	 ) from $list,
+        	 init(List<Symptom> list1 = new ArrayList<Symptom>();),
+             action(list1.add($s1);),
+             result(list1)
+        )
+    then
+    	$i.setSymptoms($symptoms);
+    	update($i);
+    	
 end
 
 

@@ -40,19 +40,3 @@ rule "Patient had 10 or more times high pressure in last 6 months"
     	$illness.getSymptomTermsFound().add(Symptom.Term.TEN_TIMES_HIGH_PRESSURE_IN_LAST_6_MONTHS);
     	update($illness);
 end
-
-
-rule "Hypertension - Symptoms"
-	no-loop 
-	agenda-group "symptoms"
-    when
-        $i: Illness( name == "Hypertension" )
-    then
-    	Symptom s = new Symptom();
-    	s.setTerm(Symptom.Term.TEN_TIMES_HIGH_PRESSURE_IN_LAST_6_MONTHS);
-    	s.setSpecific(false);
-    	s.setHelper("Patient had 10 times high pressure in last 6 months");
-    	$i.getSymptoms().add(s);
-    	update($i);
-    	
-end

@@ -53,6 +53,8 @@ export class DiagnoseIllnessComponent implements OnInit {
   redirectToPatients: boolean;
   doctor: User;
 
+  illnessesDB: Illness[];
+  
   constructor( private illnessService: IllnessService, private patientService: PatientService,
                private router: Router, private medicamentService: MedicamentService,
                private loginService: LoginService, private location: Location ) {
@@ -78,15 +80,15 @@ export class DiagnoseIllnessComponent implements OnInit {
     this.patients = [];
     this.redirectToPatients = false;
     this.doctor = new User();
+    this.illnessesDB = [];
   }
 
   ngOnInit() {
     this.getMedicaments();
     this.getPatients();
+    this.getAllIllnessesDB();
     this.doctor.id = this.loginService.getId();
     this.doctor.username = this.loginService.getUsername();
-    console.log(this.doctor.id);
-    console.log(this.doctor.username);
   }
 
   newSyptom() {
@@ -252,6 +254,14 @@ export class DiagnoseIllnessComponent implements OnInit {
        }
      );
 
+  }
+
+  getAllIllnessesDB() {
+    this.illnessService.getAllIllnessDB().then(
+      res => {
+        this.illnessesDB = res;
+      }
+    );
   }
 
   finishRecord2() {

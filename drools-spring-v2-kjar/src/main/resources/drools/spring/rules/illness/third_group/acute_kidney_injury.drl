@@ -79,47 +79,29 @@ rule "Patient used antibiotics in last 21 days"
 end
 
 
-rule "Acute Kidney Injury - Symptoms"
-	no-loop 
-	agenda-group "symptoms"
+
+
+
+
+rule "Patient diagnosed with illness which has symptom high temp in 2 weeks"
+	salience 30
+	agenda-group "set-symptom-num"
+	no-loop
+	lock-on-active true
     when
-        $i: Illness( name == "Acute Kidney Injury" )
+    	 
+    	 $illness: Illness( name == "Acute Kidney Injury" && $numOfSymptoms : symptomsFound &&
+    	  	$numOfSpecSymptoms: specificSymptomsFound && $sym : symptomTermsFound  )
+    	 
+    	 $s: Symptom(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS not memberOf $sym)
+    	 
+    	 $d: Diagnose($date: date && patientId == pId && $diagnoseId : id &&
+        								 $date >= (addDays(-14)) && (illnessName == "Tonsil Inflammation" || illnessName == "Fever" 
+        								 || illnessName == "Sinus Infection") )
+        								 
     then
-    	Symptom s = new Symptom();
-    	s.setTerm(Symptom.Term.CHOKING);
-    	s.setSpecific(false);
-    	s.setHelper("Choking");
-    	$i.getSymptoms().add(s);
-    	Symptom s1 = new Symptom();
-    	s1.setTerm(Symptom.Term.LEGS_AND_JOINTS_SWELLING);
-    	s1.setSpecific(false);
-    	s1.setHelper("Legs and joints swelling");
-    	$i.getSymptoms().add(s1);
-    	Symptom s2 = new Symptom();
-        s2.setTerm(Symptom.Term.FATIGUE);
-    	s2.setSpecific(false);
-    	s2.setHelper("Fatigue");
-    	$i.getSymptoms().add(s2);
-    	Symptom s3 = new Symptom();
-    	s3.setTerm(Symptom.Term.DIARRHEA);
-    	s3.setSpecific(false);
-    	s3.setHelper("Diarrhea");
-    	$i.getSymptoms().add(s3);
-    	Symptom s4 = new Symptom();
-    	s4.setTerm(Symptom.Term.SURGERY_RECOVERY);
-    	s4.setSpecific(true);
-    	s4.setHelper("Surgery recovery");
-    	$i.getSymptoms().add(s4);
-    	Symptom s5 = new Symptom();
-    	s5.setTerm(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
-    	s5.setSpecific(true);
-    	s5.setHelper("Suffered from illness with symptom of high temperature in last 2 weeks");
-    	$i.getSymptoms().add(s5);
-    	Symptom s6 = new Symptom();
-    	s6.setTerm(Symptom.Term.SUFFERED_AND_USED_ANTIBIOTICS_LAST_3_WEEKS);
-    	s6.setSpecific(true);
-    	s6.setHelper("Suffered from illness and used antibiotics in last 3 weeks");
-    	$i.getSymptoms().add(s6);
-    	update($i);
-    	
+    	$illness.setSymptomsFound($numOfSymptoms + 1);
+    	$illness.getSymptomTermsFound().add(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS);
+    	$illness.setSpecificSymptomsFound($numOfSpecSymptoms + 1);
+    	update($illness);
 end

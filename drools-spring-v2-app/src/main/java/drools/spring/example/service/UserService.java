@@ -53,7 +53,6 @@ public class UserService {
     			KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
     			kbconf.setOption(EventProcessingOption.STREAM);
     			KieBase kbase = kieContainer.newKieBase(kbconf);
-
     			KieSession kieSession = kbase.newKieSession();
     			
     			request.getSession().setAttribute("kieSession", kieSession);

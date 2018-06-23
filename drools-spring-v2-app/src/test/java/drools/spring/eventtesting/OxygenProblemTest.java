@@ -2,6 +2,7 @@ package drools.spring.eventtesting;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collection;
@@ -54,6 +55,7 @@ public class OxygenProblemTest {
 		KieSession kSession3 = kieBase.newKieSession(kconfig3, null);
 		
 		runPositiveTest(kSession1);
+		runNegativeTest(kSession2);
 		runRealtimePositiveTest(kSession3);
 		
 	}
@@ -92,19 +94,19 @@ public class OxygenProblemTest {
 		for (int i = 0; i < 100; i++) {
 			OxygenLevelEvent event = new OxygenLevelEvent();
             event.setPatientId(1L);
-            event.setLevel(50);
+            event.setLevel(i+10);
 			kieSession.insert(event);
 			clock.advanceTime(10, TimeUnit.MILLISECONDS);
-			int firedRules = kieSession.fireAllRules();
-			assertEquals(firedRules, 0L);
+			
 		}
-
+			
 		OxygenLevelEvent event1 = new OxygenLevelEvent();
 		event1.setPatientId(1L);
-		event1.setLevel(65);
+		event1.setLevel(60);
 		kieSession.insert(event1);
 		
 		clock.advanceTime(15, TimeUnit.MINUTES);
+		
 		kieSession.getAgenda().getAgendaGroup("oxygen-event").setFocus();
 		int firedRules = kieSession.fireAllRules();
 		assertEquals(firedRules, 0);

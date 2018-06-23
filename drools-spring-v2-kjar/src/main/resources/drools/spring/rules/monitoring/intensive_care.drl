@@ -10,9 +10,9 @@ import drools.spring.example.model.Patient;
 rule "Patient has problems with oxygen!"
 	agenda-group "oxygen-event"
     when
-    	OxygenLevelEvent( $level: level, level < 70, $pId: patientId )
+    	$ol1: OxygenLevelEvent( $level: level, level < 70, $pId: patientId )
         not (
-	        OxygenLevelEvent( level > $level, patientId == $pId )
+	        OxygenLevelEvent( level > $level, patientId == $pId, this != $ol1 )
 	        over window:time( 15m )
         )
     then

@@ -48,7 +48,7 @@
 	<br/>
 	<button class="btn btn-primary" (click)="newSyptom()">+</button>
 	<br/>
-	
+	<div id="div2">
 		<table id="table1" class="table table-hover">
 		    <thead>
 		    <tr>
@@ -74,7 +74,7 @@
 		    </tr>
 	    </tbody>
 	  </table>
-	
+	</div>
     
     <br/>
     <br/>
@@ -132,17 +132,9 @@
           	<div class="row">
           		<div id="ill">
 					<label for="fieldIllness" class="form-control-label">Illness:</label>
-			    	<select [(ngModel)]="illness.name"
-			                    class="form-control" id="field1c" name="field1">
-			              <option value="Cold">Cold</option>
-			              <option value="Fever">Fever</option>
-			              <option value="Sinus Infection">Sinus Infection</option>
-			              <option value="Tonsil Inflammation">Tonsil Inflammation</option>
-			              <option value="Diabetes">Diabetes</option>
-			              <option value="Hypertension">Hypertension</option>
-			              <option value="Acute Kidney Injury">Acute Kidney Injury</option>
-			              <option value="Chronic Kidney Disease">Kidney Disease</option>
-				</select>
+				    <select [(ngModel)]="illness.name" class="form-control" id="fieldIllness" name="fieldIllness1" >
+					  <option *ngFor="let i of illnessesDB" [value]="i.name" >{{i.name}}</option>
+					</select>
 			</div>
 			<br/>
 			<div id="button" *ngIf="diagnostic">
@@ -182,9 +174,14 @@
 			</thead>
 		    <tbody>
 		    <tr id="tr" *ngFor="let sym of illnessSymptoms">
-				<ng-container *ngIf="sym.helper != ''">
+				
 					<td>
-				   		{{sym.helper}}
+				   		<ng-container *ngIf="sym.helper != ''">
+							{{sym.helper}}
+						</ng-container>
+				   		<ng-container *ngIf="sym.helper == ''">
+							{{sym.term}}
+						</ng-container>
 				    </td>
 				    <td>
 				    	<ng-container *ngIf="sym.specific">
@@ -194,7 +191,6 @@
 				    		No
 				    	</ng-container>
 				    </td>
-			    </ng-container>
 			    </tr>
 		    </tbody>
 		  </table>

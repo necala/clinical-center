@@ -12,25 +12,23 @@ import java.util.List;
 import java.util.ArrayList;
 
 global Long idPatient;
-global ArrayList<Medicament> allergics;
-global ArrayList<Ingridient> allergicsIngr;
 
 rule "Check if patient is allergic to medicament"
-	agenda-group "check-med-allergies"
+	agenda-group "check-allergies"
     when
         $medicament: Medicament( $medName: name )
     	$allergy: MedicamentAllergy( patientId == idPatient && medicamentName == $medName )
     then    	
-    	allergics.add($medicament);
+    	insert($medName);
 end
 
 rule "Check if patient is allergic to ingridient"
-	agenda-group "check-ingr-allergies"
+	agenda-group "check-allergies"
     when
         $ingridient: Ingridient( $ingrName: name )
     	$allergy: IngridientAllergy( patientId == idPatient && ingridientName == $ingrName )
     then   
-    	allergicsIngr.add($ingridient);
+    	insert($ingrName);
 end
 
 

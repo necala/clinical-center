@@ -47,10 +47,20 @@ public class IllnessController {
 	public ResponseEntity<ArrayList<Symptom>> getSymptoms(@RequestBody Illness illness,
 			  											HttpServletRequest request){
 		
+		illness = illnessService.findByName(illness.getName());
+		
+		if (illness == null ){
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
 		ArrayList<Symptom> symptoms = illnessService.getIllnessSymptoms(illness, request);
 		
 		if (symptoms.isEmpty()){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+		
+		for (Symptom s: symptoms){
+			s.setIllness(null);
 		}
 		
 		return new ResponseEntity<>(symptoms, HttpStatus.OK);	
