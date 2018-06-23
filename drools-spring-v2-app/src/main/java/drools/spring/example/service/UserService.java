@@ -3,6 +3,8 @@ package drools.spring.example.service;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.drools.core.ClassObjectFilter;
 import org.drools.core.ClockType;
 import org.kie.api.KieBase;
@@ -36,14 +38,25 @@ public class UserService {
 	
     @Autowired
     public UserService(KieContainer kieContainer) {
-        //log.info("Initialising a new example session.");
+        log.info("Initialising a new user session.");
         this.kieContainer = kieContainer;
     }
 
-    public boolean login(String username, String password){
+    public boolean login(String username, String password, HttpServletRequest request){
+		
     	User user = getByUsername(username);
     	if (user != null){
     		if (user.getPassword().equals(password)){
+    			request.getSession().setAttribute("currentUser", user);
+    			
+    			KieServices ks = KieServices.Factory.get();
+    			KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
+    			kbconf.setOption(EventProcessingOption.STREAM);
+    			KieBase kbase = kieContainer.newKieBase(kbconf);
+
+    			KieSession kieSession = kbase.newKieSession();
+    			
+    			request.getSession().setAttribute("kieSession", kieSession);
     			return true;
     		}
     	}

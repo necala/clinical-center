@@ -6,11 +6,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import org.kie.api.KieBase;
-import org.kie.api.KieBaseConfiguration;
-import org.kie.api.KieServices;
-import org.kie.api.conf.EventProcessingOption;
-import org.kie.api.runtime.KieContainer;
+import javax.servlet.http.HttpServletRequest;
+
 import org.kie.api.runtime.KieSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,13 +33,6 @@ public class IllnessService {
 	
 	private static Logger log = LoggerFactory.getLogger(IllnessService.class);
 
-    private final KieContainer kieContainer;
-   
-    @Autowired
-    public IllnessService(KieContainer kieContainer) {
-    	log.info("Initialising a new example session.");
-        this.kieContainer = kieContainer;
-	}
     
     @Autowired
     MedicamentService medicamentService;
@@ -75,13 +65,9 @@ public class IllnessService {
     DiagnoseMedicamentService diagnoseMedicamentService;
     
     
-    public ArrayList<Illness> getOneIllness(ArrayList<Symptom> symptoms, Long patientId) {
-    	KieServices ks = KieServices.Factory.get();
-		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-		kbconf.setOption(EventProcessingOption.STREAM);
-		KieBase kbase = kieContainer.newKieBase(kbconf);
-
-		KieSession kieSession = kbase.newKieSession();
+    public ArrayList<Illness> getOneIllness(ArrayList<Symptom> symptoms, Long patientId, HttpServletRequest request) {
+    	
+		KieSession kieSession = (KieSession) request.getSession().getAttribute("kieSession");
 		
 		if (!symptoms.isEmpty()){
 			symptoms = handleSymptoms(symptoms);
@@ -136,17 +122,15 @@ public class IllnessService {
 			foundIllnesses.add(findByName(illnessCatFirst.getName()));
 		}
 		
+		releaseObjectsFromSession(kieSession);
+		
 		return foundIllnesses;
 
 	}
     
-    public ArrayList<Illness> getAllIllness(ArrayList<Symptom> symptoms, Long patientId) {
-    	KieServices ks = KieServices.Factory.get();
-		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-		kbconf.setOption(EventProcessingOption.STREAM);
-		KieBase kbase = kieContainer.newKieBase(kbconf);
-
-		KieSession kieSession = kbase.newKieSession();
+    public ArrayList<Illness> getAllIllness(ArrayList<Symptom> symptoms, Long patientId, HttpServletRequest request) {
+    	
+    	KieSession kieSession = (KieSession) request.getSession().getAttribute("kieSession");
 
 		if (!symptoms.isEmpty()){
 			symptoms = handleSymptoms(symptoms);
@@ -161,23 +145,24 @@ public class IllnessService {
 		
 		kieSession.fireAllRules();
 
+	
 		
 		ArrayList<Illness> new_illnesses = new ArrayList<>();
 		
 		for (Illness illness: illnesses){
 			if (illness.getSymptomsFound() > 0){
-				System.out.println("BOLEST: " + illness.getName() + " simptom prvi: " + illness.getSymptomTermsFound().get(0).toString());
 				new_illnesses.add(illness);
 			}
 		}
 		
 		Collections.sort(new_illnesses, symptomsFoundComparator);
 		
+		releaseObjectsFromSession(kieSession);
+		
 		return new_illnesses;
 
 	}
     
-   
 	private void addSymptomsAndIllnesses(KieSession kieSession, ArrayList<Symptom> symptoms, Long patientId,
 			ArrayList<Illness> illnesses) {
 
@@ -244,7 +229,7 @@ public class IllnessService {
         }
     }
     
-    public String setDiagnose(Record record){
+    public String setDiagnose(Record record,  HttpServletRequest request){
     	ArrayList<Symptom> symptoms = (ArrayList<Symptom>) record.getIllness().getSymptoms();
     	symptoms = handleSymptoms(symptoms);
     	record.getIllness().setSymptoms(symptoms);
@@ -254,13 +239,7 @@ public class IllnessService {
     	
     	String allergies = "Patient allergic to: ";
     	
-    	KieServices ks = KieServices.Factory.get();
-		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-		kbconf.setOption(EventProcessingOption.STREAM);
-		KieBase kbase = kieContainer.newKieBase(kbconf);
-
-		KieSession kieSession = kbase.newKieSession();
-
+		KieSession kieSession = (KieSession) request.getSession().getAttribute("kieSession");
 
         kieSession.setGlobal("idPatient", record.getPatient().getId());
         
@@ -369,19 +348,17 @@ public class IllnessService {
         	}
         }
         
+
+    	releaseObjectsFromSession(kieSession);
     	
         return allergies;
     }
 
-    public ArrayList<Symptom> getIllnessSymptoms(Illness illness){
+    public ArrayList<Symptom> getIllnessSymptoms(Illness illness, HttpServletRequest request){
     	ArrayList<Symptom> symptoms = new ArrayList<>();
     	
-    	KieServices ks = KieServices.Factory.get();
-		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-		kbconf.setOption(EventProcessingOption.STREAM);
-		KieBase kbase = kieContainer.newKieBase(kbconf);
-
-		KieSession kieSession = kbase.newKieSession();
+    	KieSession kieSession = (KieSession) request.getSession().getAttribute("kieSession");
+    	
     	kieSession.insert(illness);
     	
         kieSession.getAgenda().getAgendaGroup("symptoms").setFocus();
@@ -391,6 +368,10 @@ public class IllnessService {
         symptoms = (ArrayList<Symptom>) illness.getSymptoms();
         
         Collections.sort(symptoms, symptomsSpecificComparator);
+        
+
+    	releaseObjectsFromSession(kieSession);
+        
         return symptoms;
     }
     
@@ -444,6 +425,13 @@ public class IllnessService {
     	return illnessRepository.findAll();
     }
    
+    public void releaseObjectsFromSession(KieSession kieSession){
+    	kieSession.getObjects();
+		
+		for( Object object: kieSession.getObjects() ){
+			kieSession.delete( kieSession.getFactHandle( object ) );
+	    }
+    }
     
     Comparator<Illness> symptomsFoundComparator = new Comparator<Illness>()
     {

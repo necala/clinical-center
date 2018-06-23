@@ -2,6 +2,8 @@ package drools.spring.example.controller;
 
 import java.util.ArrayList;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,9 +135,9 @@ public class UserController {
 	
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = "application/json",
 			produces = "application/json")
-	public ResponseEntity<User> login(@RequestBody User user){
+	public ResponseEntity<User> login(@RequestBody User user, HttpServletRequest request){
 		
-		Boolean response = userService.login(user.getUsername(), user.getPassword());
+		Boolean response = userService.login(user.getUsername(), user.getPassword(), request);
 		
 		if (!response){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -143,6 +145,19 @@ public class UserController {
 			User u = userService.getByUsername(user.getUsername());
 			u.setPassword("");
 			return new ResponseEntity<>(u, HttpStatus.OK);
+		}
+		
+	}
+	
+	@RequestMapping(value = "/logout", method = RequestMethod.POST)
+	public ResponseEntity<String> logout(HttpServletRequest request){
+		
+		try{
+			request.getSession().invalidate();
+			return new ResponseEntity<>("User logged out!",HttpStatus.OK);
+			
+		} catch (Exception e) {
+			return new ResponseEntity<>("Could not logout!", HttpStatus.BAD_REQUEST);
 		}
 		
 	}

@@ -20,14 +20,6 @@ public class MedicamentService {
 	private static Logger log = LoggerFactory.getLogger(MedicamentService.class);
 	
 	
-	private final KieContainer kieContainer;
-	   
-    @Autowired
-    public MedicamentService(KieContainer kieContainer) {
-        this.kieContainer = kieContainer;
-	}    
-    
-  
     
     public Medicament save(Medicament medicament){
     	return medicamentRepository.save(medicament);

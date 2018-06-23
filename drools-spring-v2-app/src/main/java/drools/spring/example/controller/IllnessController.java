@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +44,10 @@ public class IllnessController {
 	
 	@RequestMapping(value = "/illness/symptoms", method = RequestMethod.POST, 
 			consumes = "application/json", produces = "application/json")
-	public ResponseEntity<ArrayList<Symptom>> getSymptoms(@RequestBody Illness illness){
+	public ResponseEntity<ArrayList<Symptom>> getSymptoms(@RequestBody Illness illness,
+			  											HttpServletRequest request){
 		
-		ArrayList<Symptom> symptoms = illnessService.getIllnessSymptoms(illness);
+		ArrayList<Symptom> symptoms = illnessService.getIllnessSymptoms(illness, request);
 		
 		if (symptoms.isEmpty()){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -168,9 +171,10 @@ public class IllnessController {
 	@RequestMapping(value = "/illness/one/{patientId}", method = RequestMethod.POST, 
 			consumes = "application/json", produces = "application/json")
 	public ResponseEntity<ArrayList<Illness>> getOneIllness(@RequestBody ArrayList<Symptom> symptoms,
-										  @PathVariable Long patientId){
+										  @PathVariable Long patientId,
+										  HttpServletRequest request){
 		
-		ArrayList<Illness> illnesses = illnessService.getOneIllness(symptoms, patientId);
+		ArrayList<Illness> illnesses = illnessService.getOneIllness(symptoms, patientId, request);
 		
 		if (illnesses.isEmpty()){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -188,9 +192,10 @@ public class IllnessController {
 	@RequestMapping(value = "/illness/all/{patientId}", method = RequestMethod.POST, 
 			consumes = "application/json", produces = "application/json")
 	public ResponseEntity<ArrayList<Illness>> getAllIllness(@RequestBody ArrayList<Symptom> symptoms,
-										  @PathVariable Long patientId){
+										  @PathVariable Long patientId,
+										  HttpServletRequest request){
 		
-		ArrayList<Illness> illnesses = illnessService.getAllIllness(symptoms, patientId);
+		ArrayList<Illness> illnesses = illnessService.getAllIllness(symptoms, patientId, request);
 		
 		if (illnesses.isEmpty()){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

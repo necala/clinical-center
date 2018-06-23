@@ -3,6 +3,8 @@ package drools.spring.example.controller;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,10 +52,11 @@ public class DiagnoseController {
 	
 	@RequestMapping(value = "/diagnoses", method = RequestMethod.POST, 
 			consumes = "application/json", produces = "application/json")
-	public ResponseEntity<String> diagnose(@RequestBody Record newRecord){
+	public ResponseEntity<String> diagnose(@RequestBody Record newRecord,
+										HttpServletRequest request){
         
 		
-		String allergies = illnessService.setDiagnose(newRecord);
+		String allergies = illnessService.setDiagnose(newRecord, request);
 		
 		if (allergies.equals("Patient allergic to: ")){
 			return new ResponseEntity<>(HttpStatus.OK);

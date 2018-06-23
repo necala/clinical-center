@@ -2,6 +2,8 @@ package drools.spring.example.controller;
 
 import java.util.ArrayList;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +37,9 @@ public class ReportController {
 	
 	@RequestMapping(value = "/reports", method = RequestMethod.GET, 
 			produces = "application/json")
-	public ResponseEntity<ArrayList<Report>> getReports(){
+	public ResponseEntity<ArrayList<Report>> getReports(HttpServletRequest request){
 		
-		ArrayList<Report> reports = reportService.getReport();
+		ArrayList<Report> reports = reportService.getReport(request);
 		
 		if (reports.isEmpty()){
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

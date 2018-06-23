@@ -23,8 +23,11 @@ export class LoginService {
      .then(res => res as User);
   }
 
-  public logout(): void {
+  public logout(): Promise<{}> {
     localStorage.removeItem('currentUser');
+
+    return this.http.post('/api/logout', {}, {responseType: 'text'})
+     .toPromise();
   }
 
   getUsername(): string {

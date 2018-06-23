@@ -1,13 +1,11 @@
 package drools.spring.example.service;
 
-import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.drools.core.ClassObjectFilter;
 import org.kie.api.KieBase;
@@ -21,11 +19,7 @@ import org.springframework.stereotype.Service;
 
 import drools.spring.example.model.Diagnose;
 import drools.spring.example.model.DiagnoseMedicament;
-import drools.spring.example.model.DiagnoseSymptom;
-import drools.spring.example.model.Illness;
-import drools.spring.example.model.MonitoringIssue;
 import drools.spring.example.model.Report;
-import drools.spring.example.model.Symptom;
 
 @Service
 public class ReportService {
@@ -36,32 +30,16 @@ public class ReportService {
 	@Autowired
 	private DiagnoseMedicamentService diagnoseMedicamentService;
 	
-	@Autowired
-	private DiagnoseSymptomService diagnoseSymptomService;
 	
 	@Autowired
 	private PatientService patientService;
 	
-	private final KieContainer kieContainer;
-	   
-    @Autowired
-    public ReportService(KieContainer kieContainer) {
-    	
-        this.kieContainer = kieContainer;
-	}
 
-	public ArrayList<Report> getReport(){
+	public ArrayList<Report> getReport(HttpServletRequest request){
 		
-		KieServices ks = KieServices.Factory.get();
-		KieBaseConfiguration kbconf = ks.newKieBaseConfiguration();
-		kbconf.setOption(EventProcessingOption.STREAM);
-		KieBase kbase = kieContainer.newKieBase(kbconf);
-
-		KieSession kieSession = kbase.newKieSession();
+		KieSession kieSession = (KieSession) request.getSession().getAttribute("kieSession");
 		
 		addDiagnosesToSession(kieSession);
-		
-		//kieSession.setGlobal("reports", reports);
 		
 		kieSession.getAgenda().getAgendaGroup("reports").setFocus();
         
@@ -99,6 +77,11 @@ public class ReportService {
         	}
         }
 		
+        kieSession.getObjects();
+		
+		for( Object object: kieSession.getObjects() ){
+			kieSession.delete( kieSession.getFactHandle( object ) );
+	    }
         
 		return new_report;
 	}
