@@ -24,9 +24,11 @@ rule "Patient diagnosed with illness which has symptom high temp in last 14 days
     	 
     	 $s: Symptom(Symptom.Term.SUFFERED_FROM_ILLNESS_WITH_SYMPTOM_HIGH_TEMPERATURE_LAST_2_WEEKS not memberOf $sym)
     	 
-    	 $d: Diagnose($date: date && $in: illnessName && illnessName == "Fever" || illnessName == "Sinus Infection" || 
-        								 illnessName == "Tonsil Inflamation" && patientId == pId &&
+    	 $d: Diagnose($date: date && patientId == pId && $diagnoseId : id &&
         								 $date >= (addDays(-14)) )
+        								 
+         $dSym : DiagnoseSymptom( symptomTerm == "TEMP_OVER_38" || symptomTerm == "TEMP_BETWEEN_40_AND_41" && patientId == pId &&
+         								  diagnoseId == $diagnoseId)
         								 
     then
     	$illness.setSymptomsFound($numOfSymptoms + 1);

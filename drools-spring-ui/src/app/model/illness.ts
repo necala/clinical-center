@@ -5,6 +5,7 @@ export class Illness {
   category: string;
   symptoms: Symptom[];
   symptomsFound: number;
+  symptomTermsFound: Symptom[];
 
   public constructor() {
     this.id = 0;
@@ -12,5 +13,6 @@ export class Illness {
     this.category = 'FIRST';
     this.symptoms = undefined;
     this.symptomsFound = 0;
+    this.symptomTermsFound = [];
   }
 }

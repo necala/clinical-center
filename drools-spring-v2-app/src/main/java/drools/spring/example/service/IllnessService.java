@@ -83,6 +83,10 @@ public class IllnessService {
 
 		KieSession kieSession = kbase.newKieSession();
 		
+		if (!symptoms.isEmpty()){
+			symptoms = handleSymptoms(symptoms);
+		}
+		
 		ArrayList<Illness> illnesses = findAll();
 		addSymptomsAndIllnesses(kieSession, symptoms, patientId, illnesses);
 		insertDiagnosesInSession(kieSession, patientId);
@@ -107,12 +111,6 @@ public class IllnessService {
 		kieSession.getAgenda().getAgendaGroup("set-symptom-num").setFocus();
 		
 		kieSession.fireAllRules();
-		
-		/*
-		for (Illness illness : illnesses) {
-			System.out.println(illness.getName() + " Broj simptoma: " + illness.getSymptomsFound());
-		}
-		*/
 		
 		kieSession.getAgenda().getAgendaGroup("set-illness").setFocus();
 		
@@ -150,6 +148,10 @@ public class IllnessService {
 
 		KieSession kieSession = kbase.newKieSession();
 
+		if (!symptoms.isEmpty()){
+			symptoms = handleSymptoms(symptoms);
+		}
+		
 		ArrayList<Illness> illnesses = findAll();
 		addSymptomsAndIllnesses(kieSession, symptoms, patientId, illnesses);
 		insertDiagnosesInSession(kieSession, patientId);
@@ -164,6 +166,7 @@ public class IllnessService {
 		
 		for (Illness illness: illnesses){
 			if (illness.getSymptomsFound() > 0){
+				System.out.println("BOLEST: " + illness.getName() + " simptom prvi: " + illness.getSymptomTermsFound().get(0).toString());
 				new_illnesses.add(illness);
 			}
 		}
@@ -180,9 +183,14 @@ public class IllnessService {
 
 		kieSession.setGlobal("pId", patientId);
 		
-		for (Symptom symptom : symptoms) {
-			kieSession.insert(symptom);
+		if (!symptoms.isEmpty()){
+			for (Symptom symptom : symptoms) {
+				kieSession.insert(symptom);
+			}
+		}else{
+			kieSession.insert(new Symptom());
 		}
+		
 		
 		for (Illness illness : illnesses) {
 			illness.setSymptomsFound(0);
@@ -242,7 +250,7 @@ public class IllnessService {
     	record.getIllness().setSymptoms(symptoms);
     	record.setDate(new Date());
     	
-    	
+    	ArrayList<Symptom.Term> symptomTerms = (ArrayList<Symptom.Term>) record.getIllness().getSymptomTermsFound();
     	
     	String allergies = "Patient allergic to: ";
     	
@@ -333,11 +341,11 @@ public class IllnessService {
         	
         	diagnose = diagnoseService.addDiagnose(diagnose);
         	
-        	if (!symptoms.isEmpty()){
-        		for (Symptom s: symptoms){
+        	if (!symptomTerms.isEmpty()){
+        		for (Symptom.Term s: symptomTerms){
         			DiagnoseSymptom ds = new DiagnoseSymptom();
             		ds.setDiagnoseId(diagnose.getId());
-            		ds.setSymptomTerm(s.getTerm().toString());
+            		ds.setSymptomTerm(s.toString());
             		ds.setDate(diagnose.getDate());
             		ds.setPatientId(diagnose.getPatientId());
             		ds = diagnoseSymptomService.addDiagnoseSymtpom(ds);
