@@ -41,7 +41,7 @@ export class UserService {
 
   public updateDoctor(user: User): Promise<User> {
 
-    return this.http.post('/api/users', user)
+    return this.http.put('/api/users', user)
       .toPromise()
       .then(res => res as User);
   }

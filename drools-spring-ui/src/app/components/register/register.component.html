@@ -37,6 +37,7 @@
       <div *ngIf="f.submitted && !email.valid" class="help-block">Email is required.</div>
     </div>
 
+<ng-container *ngIf="!update">
     <div class="form-group">
       <label>Username</label>
       <input type="text" class="form-control"
@@ -49,8 +50,6 @@
       <div *ngIf="f.submitted && !username.valid" class="help-block">Username is required.</div>
     </div>
 
-	<ng-container *ngIf="!update">
-	
 	    <div class="form-group">
 	      <label>Password</label>
 	      <input type="password" class="form-control"

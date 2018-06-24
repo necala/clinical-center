@@ -80,6 +80,12 @@ private static Logger log = LoggerFactory.getLogger(PatientController.class);
 		
 		patient = patientService.addPatient(p);
 		
+		ArrayList<Diagnose> diagnoses = diagnoseService.findByPatientId(p.getId());
+		for (Diagnose d: diagnoses){
+			d.setPatientName(p.getFirstName() + " " + p.getLastName());
+			d =diagnoseService.addDiagnose(d);
+		}
+		
 		return new ResponseEntity<>(patient, HttpStatus.OK);
 		
 	}

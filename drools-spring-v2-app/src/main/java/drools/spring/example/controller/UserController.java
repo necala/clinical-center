@@ -86,6 +86,12 @@ public class UserController {
 		
 		doctor = userService.save(doctor);
 		
+		ArrayList<Diagnose> diagnoses = diagnoseService.findByDoctorId(user.getId());
+		for (Diagnose d: diagnoses){
+			d.setDoctorName(user.getFirstName() + " " + user.getLastName());
+			d =diagnoseService.addDiagnose(d);
+		}
+		
 		return new ResponseEntity<>(doctor, HttpStatus.OK);
 
 	}
